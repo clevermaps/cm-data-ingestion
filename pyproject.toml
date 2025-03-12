@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cm-data-ingestion"
+version = "0.1.0"
+description = "Data ingestion tools for various geodata sources"
+authors = [{ name = "CleverMaps", email = "karel.psota@clevermaps.io" }]
+requires-python = ">=3.9"
+readme = "README.md"
+dependencies = [
+    "dlt>=1.7.0",
+    "duckdb>=1.2.0",
+    "pyarrow>=19.0.1"
+]
+
