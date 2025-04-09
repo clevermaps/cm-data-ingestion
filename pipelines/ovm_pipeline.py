@@ -1,6 +1,6 @@
 import dlt
 import os
-from cm_data_ingestion.dlt.sources.overturemaps import ovm_resource
+from cm_data_ingestion.sources.overturemaps import ovm_resource
 
 # http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000
 

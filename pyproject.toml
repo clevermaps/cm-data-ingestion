@@ -15,5 +15,5 @@ dependencies = [
     "pyarrow>=19.0.1"
 ]
 
-[tool.setuptools]
-packages = ["cm_data_ingestion"]
+[tool.setuptools.packages.find]
+where = ["src"]
