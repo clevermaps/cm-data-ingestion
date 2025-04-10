@@ -1,6 +1,9 @@
+import pyarrow.dataset as ds
+import pyarrow.fs
 import duckdb
 
 from .settings import OVM_S3_URL_TEMPLATE
+
 
 def get_duckdb_con():
 
@@ -21,7 +24,7 @@ def get_duckdb_con():
     return con
 
 
-def get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release, filter):
+def get_data_bbox_duckdb(theme, type, xmin, ymin, xmax, ymax, release, filter):
 
     url = OVM_S3_URL_TEMPLATE.format(release=release, theme=theme, type=type)
 
@@ -33,7 +36,7 @@ def get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release, filter):
 
     sql = f"""
         SELECT 
-            * 
+            * replace (st_astext(geometry) as geometry)
         FROM read_parquet('{url}', filename=true, hive_partitioning=1)
         WHERE bbox.xmin > {xmin}
         AND bbox.ymin > {ymin}
@@ -58,34 +61,34 @@ def get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release, filter):
     con.close()
 
 
-# TODO prilis narocne vypocetne, kombinace s bbox pripadne
-# def get_data_admin(theme, type, country, admin_level, admin_name, release):
+def get_data_bbox_arrow(theme, type, xmin, ymin, xmax, ymax, release):
 
-#     con = get_duckdb_con()
+    url = OVM_S3_URL_TEMPLATE.format(release=release, theme=theme, type=type)
 
-#     adm_url = f'https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/{country}/{admin_level}/geoBoundaries-{country}-{admin_level}_simplified.geojson'
+    print(url)
 
-#     ovm_url = OVM_S3_URL_TEMPLATE.format(release=release, theme=theme, type=type)
+    s3 = pyarrow.fs.S3FileSystem(region='us-west-2')
 
-#     con.sql(f"""
-#         create table ovm AS
-#         with tmp as
-#         (   
-#             select
-#                 shapeName,
-#                 geom
-#             from st_read('{adm_url}')
-#         )
-#         select a.* replace (st_astext(a.geometry) as geometry)
-#         from read_parquet('{ovm_url}', filename=true, hive_partitioning=1) a
-#         left join tmp b
-#         on st_intersects(a.geometry, b.geom)
-#         and b.shapeName = '{admin_name}'
-#     """)
+    dataset = ds.dataset(url, filesystem=s3, format="parquet")
 
-#     data = con.sql(f'select * from ovm').df().to_json(orient='records')
-#     data_dict = json.loads(data)
+    filter_expr = (
+        (ds.field("bbox", "xmin") > xmin) &
+        (ds.field("bbox", "ymin") > ymin) &
+        (ds.field("bbox", "xmax") < xmax) &
+        (ds.field("bbox", "ymax") < ymax)
+    )
 
-#     con.close()
+    print(filter_expr)
 
-#     return data_dict
+    # TODO columns parametric
+    scanner = ds.Scanner.from_dataset(
+        dataset,
+        filter=filter_expr,
+        batch_size=100000
+    )
+
+    for record_batch in scanner.to_batches():
+        df_batch = record_batch.to_pandas()
+
+        if not df_batch.empty:
+            yield df_batch
