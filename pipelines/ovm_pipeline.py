@@ -12,18 +12,19 @@ bbox = (16.297102, 49.076227, 16.454601, 49.128600)
 release = '2025-02-19.0'
 
 # Excract data from OvertureMaps to Duckdb
-#pipeline = dlt.pipeline(destination=dlt.destinations.duckdb("{}/overturemaps.db".format(os.getcwd())), dataset_name='ovm')
+pipeline = dlt.pipeline(destination=dlt.destinations.duckdb("{}/overturemaps.db".format(os.getcwd())), dataset_name='ovm')
 
-# Excract data from OvertureMaps to local file
-dlt.config["destination.filesystem.bucket_url"] = "file://{}".format(os.getcwd())
-pipeline = dlt.pipeline(destination="filesystem", dataset_name="ovm")
+# # Excract data from OvertureMaps to local file
+# dlt.config["destination.filesystem.bucket_url"] = "file://{}".format(os.getcwd())
+# pipeline = dlt.pipeline(destination="filesystem", dataset_name="ovm")
 
 result = pipeline.run(
     ovm_resource(
             theme='places', 
             type='place', 
             bbox=bbox, 
-            release=release
+            release=release,
+            filter='categories.'
         ),
         table_name='places__place'
     )

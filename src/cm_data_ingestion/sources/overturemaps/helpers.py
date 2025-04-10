@@ -6,7 +6,7 @@ def get_duckdb_con():
 
     con = duckdb.connect(
         config={
-            'threads': 4,
+            'threads': 1,
             'max_memory': '6GB',
         }
     )
@@ -21,7 +21,7 @@ def get_duckdb_con():
     return con
 
 
-def get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release):
+def get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release, filter):
 
     url = OVM_S3_URL_TEMPLATE.format(release=release, theme=theme, type=type)
 
@@ -37,6 +37,11 @@ def get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release):
         AND bbox.xmax < {xmax}
         AND bbox.ymax < {ymax}
     """
+
+    if filter:
+        sql = sql + ' AND ( {} )'.format(filter)
+
+    print(sql)
 
     record_batch_reader = con.execute(sql).fetch_record_batch()
 

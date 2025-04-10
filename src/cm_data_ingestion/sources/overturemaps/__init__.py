@@ -6,9 +6,9 @@ from .helpers import get_data_bbox
 # https://til.simonwillison.net/overture-maps/overture-maps-parquet
 
 @dlt.resource(max_table_nesting=0)
-def ovm_resource(theme, type, bbox, release):
+def ovm_resource(theme, type, bbox, release, filter=None):
 
     xmin, ymin, xmax, ymax = bbox[0], bbox[1], bbox[2], bbox[3]
-    data = get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release)
+    data = get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release, filter)
 
     yield data
