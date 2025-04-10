@@ -89,7 +89,7 @@ def get_data_bbox_arrow(theme, type, xmin, ymin, xmax, ymax, release):
 
     for record_batch in scanner.to_batches():
         if record_batch:
-            print(record_batch)
+            
             yield record_batch
 
         # df_batch = record_batch.to_pandas()
