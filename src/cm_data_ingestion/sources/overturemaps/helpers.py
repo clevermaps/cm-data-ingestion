@@ -27,10 +27,13 @@ def get_data_bbox(theme, type, xmin, ymin, xmax, ymax, release, filter):
 
     print(url)
 
+
+
     con = get_duckdb_con()
 
     sql = f"""
-        SELECT * replace (st_astext(geometry) as geometry)
+        SELECT 
+            * 
         FROM read_parquet('{url}', filename=true, hive_partitioning=1)
         WHERE bbox.xmin > {xmin}
         AND bbox.ymin > {ymin}
