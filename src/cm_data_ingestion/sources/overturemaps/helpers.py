@@ -92,13 +92,15 @@ def get_data_bbox_arrow(theme, type, xmin, ymin, xmax, ymax, release):
             
             duckdb_con = get_duckdb_con()
 
-            # TODO to normalizer?
-            sql = f"""
-                SELECT 
-                    * replace (st_astext(st_geomfromwkb(geometry)) as geometry)
-                FROM record_batch
-            """
+            # # TODO to normalizer?
+            # sql = f"""
+            #     SELECT 
+            #         * replace (st_astext(st_geomfromwkb(geometry)) as geometry)
+            #     FROM record_batch
+            # """
 
-            data = duckdb_con.sql(sql).df()
+            # data = duckdb_con.sql(sql).fetchall()
+
+            data = record_batch
 
             yield data
