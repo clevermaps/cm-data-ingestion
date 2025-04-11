@@ -90,9 +90,16 @@ def get_data_bbox_arrow(theme, type, xmin, ymin, xmax, ymax, release):
     for record_batch in scanner.to_batches():
         if record_batch:
             
-            yield record_batch
+            duckdb_con = get_duckdb_con()
 
-        # df_batch = record_batch.to_pandas()
+            # TODO to normalizer?
+            sql = f"""
+                SELECT 
+                    * replace (st_astext(st_geomfromwkb(geometry)) as geometry)
+                FROM record_batch
+            """
 
-        # if not df_batch.empty:
-        #     yield df_batch
+            data = duckdb_con.sql(sql).fetchall()
+            print(data)
+
+            yield data
