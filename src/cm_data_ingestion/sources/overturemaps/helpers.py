@@ -99,7 +99,6 @@ def get_data_bbox_arrow(theme, type, xmin, ymin, xmax, ymax, release):
                 FROM record_batch
             """
 
-            data = duckdb_con.sql(sql).fetchall()
-            print(data)
+            data = duckdb_con.sql(sql).df()
 
             yield data
