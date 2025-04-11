@@ -88,7 +88,7 @@ def get_data_bbox_arrow(theme, type, xmin, ymin, xmax, ymax, release):
     )
 
     for record_batch in scanner.to_batches():
-        if record_batch:
+        if record_batch.num_rows > 0:
             
             duckdb_con = get_duckdb_con()
 
