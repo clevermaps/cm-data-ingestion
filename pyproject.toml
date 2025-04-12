@@ -12,7 +12,8 @@ readme = "README.md"
 dependencies = [
     "dlt>=1.7.0",
     "duckdb>=1.2.0",
-    "pyarrow>=19.0.1"
+    "pyarrow>=19.0.1",
+    "mercantile>=1.2.1"
 ]
 
 [tool.setuptools.packages.find]
