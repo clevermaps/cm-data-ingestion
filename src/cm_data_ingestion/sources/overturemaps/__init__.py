@@ -1,14 +1,16 @@
 import dlt
 
-from .helpers import get_data_bbox_arrow
+from .helpers import get_data_bbox_arrow, get_data_bbox_divide_arrow
 
 # Overturemaps schema
 # https://til.simonwillison.net/overture-maps/overture-maps-parquet
 
+# TODO logging
+
 @dlt.resource(max_table_nesting=0)
-def ovm_resource(theme, type, bbox, release):
+def ovm_resource(theme, type, bbox, release, bbox_divide_zoom=None):
 
-    xmin, ymin, xmax, ymax = bbox[0], bbox[1], bbox[2], bbox[3]
-    data = get_data_bbox_arrow(theme, type, xmin, ymin, xmax, ymax, release)
-
-    yield data
+    if not bbox_divide_zoom:
+        yield from get_data_bbox_arrow(theme, type, bbox, release)
+    else:
+        yield from get_data_bbox_divide_arrow(theme, type, bbox, release, bbox_divide_zoom)
