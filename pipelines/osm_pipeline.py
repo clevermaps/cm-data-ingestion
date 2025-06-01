@@ -35,7 +35,7 @@ def validate_config(config):
     # Keys that are optional but have type constraints if present
     optional_keys_with_type = {
         'tag': str,
-        'release': str,
+        'target_date': str,
         'element_type': str  # element_type can also be None
     }
 
@@ -89,8 +89,8 @@ def run_osm_pipeline(pipeline_name, destination_path, dataset_name, download_con
             country_code=config_item['country_code'],
             tag=config_item['tag'],
             value=config_item['value'],
-            release=config_item['release'],
-            element_type=config_item.get('element_type')  # Use .get() for optional keys
+            element_type=config_item.get('element_type', None),  # Use .get() for optional keys
+            target_date=config_item.get('target_date', None)  # Default to None if not provided
         )
         result = pipeline.run(
             resource,
