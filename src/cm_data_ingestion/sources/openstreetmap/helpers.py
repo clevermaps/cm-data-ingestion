@@ -41,11 +41,11 @@ def setup_duckdb_extensions(con):
     con.execute("LOAD 'spatial';")
 
 
-def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None):
+def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None, element_type=None):
     con = duckdb.connect()
     setup_duckdb_extensions(con)
 
-    # Build the query dynamically based on the presence of tag and value
+    # Build the query dynamically based on the presence of tag, value, and element_type
     query = f"SELECT * FROM ST_ReadOsm('{pbf_file_path}')"
     conditions = []
     if tag:
@@ -55,6 +55,9 @@ def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None):
         else:
             # Filter by the existence of the tag
             conditions.append(f"json_extract_string(tags, '$.{tag}') IS NOT NULL")
+
+    if element_type:
+        conditions.append(f"kind = '{element_type.lower()}'")
 
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
@@ -66,7 +69,7 @@ def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None):
     return rows, column_names
 
 
-def get_data(country_code, tag, value, release):
+def get_data(country_code, tag, value, release, element_type=None):
     country_data = get_country_by_iso_code(country_code)
 
     if not country_data:
@@ -83,14 +86,14 @@ def get_data(country_code, tag, value, release):
     download_pbf(url, pbf_file_path)
 
     # Step 2: Process the PBF file using DuckDB
-    rows, column_names = process_pbf_with_duckdb(pbf_file_path, tag, value)
+    rows, column_names = process_pbf_with_duckdb(pbf_file_path, tag, value, element_type)
 
     # Step 3: Yield the results as dictionaries
     total_nodes = len(rows)
-    print(f"Total nodes fetched: {total_nodes}")
+    print(f"Total items fetched: {total_nodes}")
 
     for index, row in enumerate(rows):
         if (index + 1) % 100 == 0 or index + 1 == total_nodes:
-            print(f"Processed {index + 1}/{total_nodes} nodes")
+            print(f"Processed {index + 1}/{total_nodes} items")
 
         yield dict(zip(column_names, row))
