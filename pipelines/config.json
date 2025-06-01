@@ -1,0 +1,29 @@
+{
+  "database_path": "openstreetmap.db",
+  "downloads": [
+    {
+      "country_code": "ad",
+      "tag": "place",
+      "value": "town",
+      "release": "2025-02-19.0",
+      "element_type": "node",
+      "table_name": "places__ad_towns"
+    },
+    {
+      "country_code": "li",
+      "tag": "amenity",
+      "value": "restaurant",
+      "release": "2025-02-19.0",
+      "element_type": "node",
+      "table_name": "amenities__li_restaurants"
+    },
+    {
+      "country_code": "mc",
+      "tag": "highway",
+      "value": null,
+      "release": "2025-02-19.0",
+      "element_type": "way",
+      "table_name": "transport__mc_highways"
+    }
+  ]
+}
