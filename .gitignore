@@ -1,3 +1,10 @@
+# Temp folder for file downloads
+pipelines/temp
+!pipelines/temp/.gitkeep
+
+# JetBrains IDEs
+.idea
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
