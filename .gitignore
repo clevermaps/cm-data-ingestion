@@ -1,12 +1,12 @@
 # Temp folder for file downloads
-pipelines/temp
-!pipelines/temp/.gitkeep
+temp
+!temp/.gitkeep
 
 # JetBrains IDEs
 .idea
 
 # DuckDB files
-pipelines/*.db
+*.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,14 +1,43 @@
 import dlt
 import os
 import json
+import argparse
 
 from cm_data_ingestion.sources.openstreetmap import osm_resource
 
 
-def load_config(config_path):
+def get_config_path():
+    parser = argparse.ArgumentParser(description='OpenStreetMap data pipeline')
+    parser.add_argument('--config', '-c', required=True,
+                        help='Path to the configuration file')
+    args = parser.parse_args()
+
+    current_working_directory = os.getcwd()
+    config_file_path = os.path.join(current_working_directory, args.config)
+
+    return config_file_path
+
+
+def load_config():
     """Loads the JSON configuration file."""
-    with open(config_path, 'r') as f:
-        config = json.load(f)
+
+    config_path = get_config_path()
+
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+            validate_config(config)
+    except FileNotFoundError:
+        print(f"Error: Configuration file not found at {config_path}")
+        exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Error: Could not decode JSON from configuration file: {e}")
+        exit(1)
+    except ValueError as e:
+        print(f"Error: Invalid configuration: {e}")
+        exit(1)
+
+
     return config
 
 
@@ -100,28 +129,12 @@ def run_osm_pipeline(pipeline_name, destination_path, dataset_name, download_con
 
 
 if __name__ == "__main__":
-    # Define paths and names
-    current_working_directory = os.getcwd()
-    config_file_path = os.path.join(current_working_directory, 'config.json')
-
-    # Load configuration
-    try:
-        configuration = load_config(config_file_path)
-        validate_config(configuration)
-    except FileNotFoundError:
-        print(f"Error: Configuration file not found at {config_file_path}")
-        exit(1)
-    except json.JSONDecodeError as e:
-        print(f"Error: Could not decode JSON from configuration file: {e}")
-        exit(1)
-    except ValueError as e:
-        print(f"Error: Invalid configuration: {e}")
-        exit(1)
-
+    configuration = load_config()
     db_path_from_config = configuration['database_path']
+
     # If db_path_from_config is relative, join with CWD, otherwise use as is.
     if not os.path.isabs(db_path_from_config):
-        db_path = os.path.join(current_working_directory, db_path_from_config)
+        db_path = os.path.join(os.getcwd(), db_path_from_config)
     else:
         db_path = db_path_from_config
 
