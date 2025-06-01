@@ -5,6 +5,9 @@ pipelines/temp
 # JetBrains IDEs
 .idea
 
+# DuckDB files
+pipelines/*.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
