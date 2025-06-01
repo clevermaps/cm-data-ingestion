@@ -7,7 +7,7 @@
       "value": "town",
       "release": "2025-02-19.0",
       "element_type": "node",
-      "table_name": "places__ad_towns"
+      "table_name": "ad__places_towns"
     },
     {
       "country_code": "li",
@@ -15,7 +15,7 @@
       "value": "restaurant",
       "release": "2025-02-19.0",
       "element_type": "node",
-      "table_name": "amenities__li_restaurants"
+      "table_name": "li__amenities_restaurants"
     },
     {
       "country_code": "mc",
@@ -23,7 +23,7 @@
       "value": null,
       "release": "2025-02-19.0",
       "element_type": "way",
-      "table_name": "transport__mc_highways"
+      "table_name": "mc__highways_all"
     }
   ]
 }
