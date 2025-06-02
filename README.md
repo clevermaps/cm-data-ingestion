@@ -22,3 +22,19 @@ Check `pipelines` folder.
 ## Changelog
 
 0.0.1 Initial version
+
+
+## Running OSM pipeline
+
+Configure download settings in `config.json`.
+
+Init virtual env, install all deps and run OSM pipeline.
+```
+python -m venv venv
+source venv/bin/activate
+pip install .
+pip install -r src/cm_data_ingestion/sources/openstreetmap/requirements.txt
+python pipelines/osm_pipeline.py -c config.json
+```
+
+DuckDB with downloaded data is located at `openstreetmap.db`.
