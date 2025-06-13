@@ -181,10 +181,13 @@ def find_most_recent_suitable_pbf_file(country_code, target_date_range=None, tar
     else:
         return files[-1]
 
+
 def get_data(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0):
     """
     Get OSM data for a specific country, filtered by tags and optionally by date.
     """
+    current_datetime = datetime.now().isoformat()  # Get the current date-time
+
     # Step 1: Find the suitable PBF file URL
     pbf_url, date_suffix = find_most_recent_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days)
     print('Using PBF URL:', pbf_url, 'with date suffix:', date_suffix)
@@ -199,9 +202,14 @@ def get_data(country_code, tag, value, element_type=None, target_date_range=None
     total_nodes = len(rows)
     print(f"Total items fetched: {total_nodes}")
 
-    # Step 4: Yield the results
+    # Step 4: Add additional fields and yield the results
     for index, row in enumerate(rows):
         if (index + 1) % 100 == 0 or index + 1 == total_nodes:
             print(f"Processed {index + 1}/{total_nodes} items")
 
-        yield dict(zip(column_names, row))
+        # Add "data_version" and "imported_at" fields
+        result = dict(zip(column_names, row))
+        result["data_version"] = date_suffix
+        result["imported_at"] = current_datetime
+
+        yield result
