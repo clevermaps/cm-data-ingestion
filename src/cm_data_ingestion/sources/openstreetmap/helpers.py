@@ -115,7 +115,7 @@ def get_available_historical_files(pbf_url, country_id):
     return available_dates
 
 
-def get_historical_file_url(pbf_url, country_id, target_date_range, target_date_tolerance_days=0):
+def get_available_historical_files_in_range(pbf_url, country_id, target_date_range, target_date_tolerance_days=0):
     """
     Find historical OSM file URL based on the provided PBF URL and target date range.
     Args:
@@ -124,8 +124,7 @@ def get_historical_file_url(pbf_url, country_id, target_date_range, target_date_
         target_date_range (tuple): A tuple containing start and end dates as strings in 'YYYY-MM-DD' format.
         target_date_tolerance_days (int): Number of days to allow for tolerance in date matching.
     Returns:
-        tuple: A tuple containing the historical file URL and the actual date string used.
-        None, None if no suitable file is found.
+        list: A list of tuples containing (date, file_url, date_str) for matching files.
     """
 
     # Convert target_date_range to datetime, removing .0 suffix if present
@@ -138,19 +137,15 @@ def get_historical_file_url(pbf_url, country_id, target_date_range, target_date_
     available_dates = get_available_historical_files(pbf_url, country_id)
 
     # Filter only relevant files within the target date range and tolerance
-    available_dates = [
+    filtered_available_dates = [
         (date, file_url, date_str) for date, file_url, date_str in available_dates
         if start_date - timedelta(days=target_date_tolerance_days) <= date <= end_date + timedelta(days=target_date_tolerance_days)
     ]
 
-    if len(available_dates) == 0:
-        return None, None
-    else:
-        last_item = available_dates[-1]
-        return last_item[1], last_item[2]
+    return filtered_available_dates
 
 
-def find_suitable_pbf_file(country_code, target_date_range=None, target_date_tolerance_days=0):
+def find_suitable_pbf_files(country_code, target_date_range=None, target_date_tolerance_days=0):
     country_data = get_country_by_iso_code(country_code)
 
     if not country_data:
@@ -161,27 +156,37 @@ def find_suitable_pbf_file(country_code, target_date_range=None, target_date_tol
         raise ValueError(f"No PBF URL found for ISO code: {country_code}")
 
     if target_date_range:
-        historical_pbf_url, actual_date_str = get_historical_file_url(
+        available_files = get_available_historical_files_in_range(
             pbf_url,
             country_data['id'],
             target_date_range,
             target_date_tolerance_days
         )
 
-        if not historical_pbf_url:
+        if len(available_files) == 0:
             raise ValueError(f"No suitable PBF file found for country code: {country_code} within the specified date range {target_date_range} and tolerance {target_date_tolerance_days} days.")
 
-        return historical_pbf_url, actual_date_str
+        return [(file_url, date_str) for date, file_url, date_str in available_files]
 
-    return pbf_url, "latest"
+    return [(pbf_url, "latest")]
 
+def find_most_recent_suitable_pbf_file(country_code, target_date_range=None, target_date_tolerance_days=0):
+    files = find_suitable_pbf_files(
+        country_code,
+        target_date_range,
+        target_date_tolerance_days
+    )
+    if len(files) == 0:
+        return None, None
+    else:
+        return files[-1]
 
 def get_data(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0):
     """
     Get OSM data for a specific country, filtered by tags and optionally by date.
     """
     # Step 1: Find the suitable PBF file URL
-    pbf_url, date_suffix = find_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days)
+    pbf_url, date_suffix = find_most_recent_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days)
     print('Using PBF URL:', pbf_url, 'with date suffix:', date_suffix)
 
     # Step 2: Download the PBF file

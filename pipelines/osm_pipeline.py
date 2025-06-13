@@ -3,7 +3,7 @@ import os
 import json
 import argparse
 from jsonschema import validate, ValidationError
-from cm_data_ingestion.sources.openstreetmap import osm_resource
+from cm_data_ingestion.sources.openstreetmap import osm_resource, get_available_data_versions
 from cm_data_ingestion.sources.schema.config_schema import config_schema
 
 
@@ -72,6 +72,13 @@ def run_osm_pipeline(pipeline_name, destination_path, dataset_name, download_con
 
     for config_item in download_configs:
         print('-------')
+        print(f"Listing available data versions for: {config_item['table_name']}")
+        print(get_available_data_versions(
+            country_code=config_item['country_code'],
+            target_date_range=config_item.get('target_date_range', None),  # Use .get() for optional keys
+            target_date_tolerance_days=config_item.get('target_date_tolerance_days', 0)  # Default to 0 if not provided
+        ))
+
         print(f"Processing download for table: {config_item['table_name']}")
         resource = osm_resource(
             country_code=config_item['country_code'],
