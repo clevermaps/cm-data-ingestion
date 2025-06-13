@@ -18,6 +18,17 @@ def get_config_path():
     return config_file_path
 
 
+def get_database_path(config):
+    """Returns the database path from the configuration."""
+    path = config['database_path']
+
+    # If db_path_from_config is relative, join with CWD, otherwise use as is.
+    if not os.path.isabs(path):
+        path = os.path.join(os.getcwd(), path)
+
+    return path
+
+
 def load_config():
     """Loads the JSON configuration file."""
 
@@ -37,7 +48,6 @@ def load_config():
         print(f"Error: Invalid configuration: {e}")
         exit(1)
 
-
     return config
 
 
@@ -46,50 +56,51 @@ def validate_config(config):
     if not isinstance(config, dict):
         raise ValueError("Configuration must be a dictionary.")
 
-    if 'database_path' not in config:
-        raise ValueError("Missing 'database_path' in configuration.")
-    if not isinstance(config['database_path'], str):
-        raise ValueError("'database_path' must be a string.")
+    # Required
+    if 'database_path' not in config or config['database_path'] is None or not isinstance(config['database_path'], str):
+        raise ValueError("Missing 'database_path' in configuration as str.")
 
-    if 'downloads' not in config:
+    # Required
+    if 'downloads' not in config or config['downloads'] is None or not isinstance(config['downloads'], list):
         raise ValueError("Missing 'downloads' list in configuration.")
-    if not isinstance(config['downloads'], list):
-        raise ValueError("'downloads' must be a list.")
-
-    # Keys that are always required for each download item, with their expected types
-    always_required_keys_with_type = {
-        'country_code': str,
-        'table_name': str
-    }
-    # Keys that are optional but have type constraints if present
-    optional_keys_with_type = {
-        'tag': str,
-        'target_date': str,
-        'element_type': str  # element_type can also be None
-    }
 
     for i, item in enumerate(config['downloads']):
         if not isinstance(item, dict):
             raise ValueError(f"Download item at index {i} must be a dictionary.")
 
-        for key, expected_type in always_required_keys_with_type.items():
-            if key not in item:
-                raise ValueError(f"Missing key '{key}' in download item at index {i}.")
-            if not isinstance(item[key], expected_type):
-                raise ValueError(
-                    f"Key '{key}' in download item at index {i} must be of type {expected_type.__name__}.")
+        # Required
+        if 'country_code' not in item or item['country_code'] is None or not isinstance(item['country_code'], str):
+            raise ValueError(f"Missing key 'country_code' in download item at index {i} with data type str.")
 
-        for key, expected_type in optional_keys_with_type.items():
-            if key in item and item[key] is not None and not isinstance(item[key], expected_type):
-                raise ValueError(
-                    f"Optional key '{key}' in download item at index {i} must be a {expected_type.__name__} or null.")
+        # Optional
+        if 'tag' in item and item['tag'] is not None and not isinstance(item['tag'], str):
+            raise ValueError(f"Optional key 'tag' in download item at index {i} must be a str or null.")
 
-        # Validate 'value'
+        # 'value' is optional, but if present, 'tag' must also be present and not null
+        # 'value' itself can be of various types or null, so no strict type check here beyond its dependency on 'tag'
         if 'value' in item and item['value'] is not None:
             if 'tag' not in item or item['tag'] is None:
-                raise ValueError(
-                    f"If 'value' is present in download item at index {i}, 'tag' must also be present and not null.")
-            # 'value' itself can be of various types or null, so no strict type check here beyond its dependency on 'tag'
+                raise ValueError(f"If 'value' is present in download item at index {i}, 'tag' must also be present and not null.")
+
+        # Optional
+        if 'element_type' in item and item['element_type'] is not None and not isinstance(item['element_type'], str):
+             raise ValueError(f"Optional key 'element_type' in download item at index {i} must be a str or null.")
+
+        # Optional
+        if 'target_date_range' in item and item['target_date_range'] is not None:
+            if not isinstance(item['target_date_range'], list) or len(item['target_date_range']) != 2:
+                raise ValueError(f"'target_date_range' in download item at index {i} must be a list with two string elements - min and max date.")
+            for date in item['target_date_range']:
+                if not isinstance(date, str):
+                    raise ValueError(f"Each date in 'target_date_range' at index {i} must be a string.")
+
+        # Optional
+        if 'target_date_tolerance_days' in item and item['target_date_tolerance_days'] is not None and not isinstance(item['target_date_tolerance_days'], int):
+                raise ValueError(f"Optional key 'target_date_tolerance_days' in download item at index {i} must be an int or null.")
+
+        # Required
+        if 'table_name' not in item or item['table_name'] is None or not isinstance(item['table_name'], str):
+                raise ValueError(f"Missing key 'table_name' in download item at index {i} with data type str.")
 
     print("Configuration validated successfully.")
     return True
@@ -129,24 +140,18 @@ def run_osm_pipeline(pipeline_name, destination_path, dataset_name, download_con
 
 
 if __name__ == "__main__":
-    configuration = load_config()
-    db_path_from_config = configuration['database_path']
-
-    # If db_path_from_config is relative, join with CWD, otherwise use as is.
-    if not os.path.isabs(db_path_from_config):
-        db_path = os.path.join(os.getcwd(), db_path_from_config)
-    else:
-        db_path = db_path_from_config
-
-    downloads = configuration.get('downloads', [])
+    config = load_config()
+    db_path = get_database_path(config)
+    downloads = config.get('downloads', [])
 
     if not downloads:
         print("No download configurations found in the config file.")
-    else:
-        # Run the pipeline with the loaded configurations
-        run_osm_pipeline(
-            pipeline_name="osm",
-            destination_path=db_path,
-            dataset_name='osm',
-            download_configs=downloads
-        )
+        exit(1)
+
+    # Run the pipeline with the loaded configurations
+    run_osm_pipeline(
+        pipeline_name="osm",
+        destination_path=db_path,
+        dataset_name='osm',
+        download_configs=downloads
+    )
