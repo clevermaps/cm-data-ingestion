@@ -94,7 +94,7 @@ def get_available_historical_files(pbf_url, country_id):
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Look for links with pattern country-YYMMDD.osm.pbf
-    date_pattern = re.compile(rf'{os.path.basename(country_id)}-(\d{{6}})\.osm\.pbf')
+    date_pattern = re.compile(rf'^{os.path.basename(country_id)}-(\d{{6}})\.osm\.pbf$')
     for link in soup.find_all('a'):
         href = link.get('href')
         if href and date_pattern.search(href):
@@ -144,6 +144,21 @@ def get_available_historical_files_in_range(pbf_url, country_id, target_date_ran
 
     return filtered_available_dates
 
+def get_last_available_file(pbf_url, country_id):
+    """
+    Get the last available historical OSM file URL based on the provided PBF URL and country ID.
+    :param pbf_url: str
+    :param country_id: str
+    :return: tuple containing (date, file_url, date_str) of the last available file
+    """
+    available_files = get_available_historical_files(pbf_url, country_id)
+    if not available_files:
+        return None
+
+    # Sort by date and return the last one
+    available_files.sort(key=lambda x: x[0])
+    return available_files[-1]
+
 
 def find_suitable_pbf_files(country_code, target_date_range=None, target_date_tolerance_days=0):
     country_data = get_country_by_iso_code(country_code)
@@ -167,8 +182,14 @@ def find_suitable_pbf_files(country_code, target_date_range=None, target_date_to
             raise ValueError(f"No suitable PBF file found for country code: {country_code} within the specified date range {target_date_range} and tolerance {target_date_tolerance_days} days.")
 
         return [(file_url, date_str) for date, file_url, date_str in available_files]
+    else:
+        # If no date range is specified, return the latest available file
+        last_file = get_last_available_file(pbf_url, country_data['id'])
+        if last_file:
+            return [(last_file[1], last_file[2])]
+        else:
+            raise ValueError(f"No suitable PBF file found for country code: {country_code}.")
 
-    return [(pbf_url, "latest")]
 
 def find_most_recent_suitable_pbf_file(country_code, target_date_range=None, target_date_tolerance_days=0):
     files = find_suitable_pbf_files(
