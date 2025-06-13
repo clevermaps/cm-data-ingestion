@@ -42,3 +42,9 @@ DuckDB with downloaded data is located at `openstreetmap.db`. Check it with Duck
 ```
 duckdb openstreetmap.db
 ```
+
+or using DuckDB UI:
+
+```
+duckdb --ui openstreetmap.db
+```
