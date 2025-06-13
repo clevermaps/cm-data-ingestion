@@ -2,8 +2,9 @@ import dlt
 import os
 import json
 import argparse
-
+from jsonschema import validate, ValidationError
 from cm_data_ingestion.sources.openstreetmap import osm_resource
+from cm_data_ingestion.sources.schema.config_schema import config_schema
 
 
 def get_config_path():
@@ -37,73 +38,20 @@ def load_config():
     try:
         with open(config_path, 'r') as f:
             config = json.load(f)
-            validate_config(config)
+            validate(config, schema=config_schema)
+            return config
     except FileNotFoundError:
         print(f"Error: Configuration file not found at {config_path}")
         exit(1)
     except json.JSONDecodeError as e:
         print(f"Error: Could not decode JSON from configuration file: {e}")
         exit(1)
+    except ValidationError as e:
+        print(f"Configuration validation error: {e}")
+        exit(1)
     except ValueError as e:
         print(f"Error: Invalid configuration: {e}")
         exit(1)
-
-    return config
-
-
-def validate_config(config):
-    """Validates the loaded configuration."""
-    if not isinstance(config, dict):
-        raise ValueError("Configuration must be a dictionary.")
-
-    # Required
-    if 'database_path' not in config or config['database_path'] is None or not isinstance(config['database_path'], str):
-        raise ValueError("Missing 'database_path' in configuration as str.")
-
-    # Required
-    if 'downloads' not in config or config['downloads'] is None or not isinstance(config['downloads'], list):
-        raise ValueError("Missing 'downloads' list in configuration.")
-
-    for i, item in enumerate(config['downloads']):
-        if not isinstance(item, dict):
-            raise ValueError(f"Download item at index {i} must be a dictionary.")
-
-        # Required
-        if 'country_code' not in item or item['country_code'] is None or not isinstance(item['country_code'], str):
-            raise ValueError(f"Missing key 'country_code' in download item at index {i} with data type str.")
-
-        # Optional
-        if 'tag' in item and item['tag'] is not None and not isinstance(item['tag'], str):
-            raise ValueError(f"Optional key 'tag' in download item at index {i} must be a str or null.")
-
-        # 'value' is optional, but if present, 'tag' must also be present and not null
-        # 'value' itself can be of various types or null, so no strict type check here beyond its dependency on 'tag'
-        if 'value' in item and item['value'] is not None:
-            if 'tag' not in item or item['tag'] is None:
-                raise ValueError(f"If 'value' is present in download item at index {i}, 'tag' must also be present and not null.")
-
-        # Optional
-        if 'element_type' in item and item['element_type'] is not None and not isinstance(item['element_type'], str):
-             raise ValueError(f"Optional key 'element_type' in download item at index {i} must be a str or null.")
-
-        # Optional
-        if 'target_date_range' in item and item['target_date_range'] is not None:
-            if not isinstance(item['target_date_range'], list) or len(item['target_date_range']) != 2:
-                raise ValueError(f"'target_date_range' in download item at index {i} must be a list with two string elements - min and max date.")
-            for date in item['target_date_range']:
-                if not isinstance(date, str):
-                    raise ValueError(f"Each date in 'target_date_range' at index {i} must be a string.")
-
-        # Optional
-        if 'target_date_tolerance_days' in item and item['target_date_tolerance_days'] is not None and not isinstance(item['target_date_tolerance_days'], int):
-                raise ValueError(f"Optional key 'target_date_tolerance_days' in download item at index {i} must be an int or null.")
-
-        # Required
-        if 'table_name' not in item or item['table_name'] is None or not isinstance(item['table_name'], str):
-                raise ValueError(f"Missing key 'table_name' in download item at index {i} with data type str.")
-
-    print("Configuration validated successfully.")
-    return True
 
 
 def run_osm_pipeline(pipeline_name, destination_path, dataset_name, download_configs):
