@@ -37,4 +37,8 @@ pip install -r src/cm_data_ingestion/sources/openstreetmap/requirements.txt
 python pipelines/osm_pipeline.py -c config.json
 ```
 
-DuckDB with downloaded data is located at `openstreetmap.db`.
+DuckDB with downloaded data is located at `openstreetmap.db`. Check it with DuckDB CLI:
+
+```
+duckdb openstreetmap.db
+```

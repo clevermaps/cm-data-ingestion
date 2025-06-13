@@ -6,7 +6,8 @@
       "tag": "place",
       "value": "town",
       "element_type": "node",
-      "target_date": null,
+      "target_date_range": null,
+      "target_date_tolerance_days": 0,
       "table_name": "ad__places_towns"
     },
     {
@@ -14,15 +15,26 @@
       "tag": "amenity",
       "value": "restaurant",
       "element_type": "node",
-      "target_date": "2023-02-19",
+      "target_date_range": ["2023-01-01", "2023-01-01"],
+      "target_date_tolerance_days": 0,
       "table_name": "li__amenities_restaurants"
+    },
+    {
+      "country_code": "mc",
+      "tag": "government",
+      "value": null,
+      "element_type": "node",
+      "target_date_range": ["2022-12-01", "2023-03-01"],
+      "target_date_tolerance_days": 0,
+      "table_name": "mc__government_all"
     },
     {
       "country_code": "mc",
       "tag": "highway",
       "value": null,
       "element_type": "way",
-      "target_date": "2025-02-19",
+      "target_date_range": ["2024-12-01", "2024-12-12"],
+      "target_date_tolerance_days": 60,
       "table_name": "mc__highways_all"
     }
   ]
