@@ -64,6 +64,8 @@ def run_osm_pipeline(pipeline_name, destination_path, dataset_name, download_con
         dataset_name (str): The name of the dataset in the destination.
         download_configs (list): A list of download configurations.
     """
+    print(f"Running DLT pipeline: '{pipeline_name}' with destination at '{destination_path}' and dataset name '{dataset_name}'")
+
     pipeline = dlt.pipeline(
         pipeline_name=pipeline_name,
         destination=dlt.destinations.duckdb(destination_path),
@@ -71,28 +73,33 @@ def run_osm_pipeline(pipeline_name, destination_path, dataset_name, download_con
     )
 
     for config_item in download_configs:
-        print('-------')
-        print(f"Listing available data versions for: {config_item['table_name']}")
-        print(get_available_data_versions(
-            country_code=config_item['country_code'],
-            target_date_range=config_item.get('target_date_range', None),  # Use .get() for optional keys
-            target_date_tolerance_days=config_item.get('target_date_tolerance_days', 0)  # Default to 0 if not provided
-        ))
+        print('==========')
+        print(f"Downloading data about {len(config_item['country_codes'])} countries into table: {config_item['table_name']}...")
 
-        print(f"Processing download for table: {config_item['table_name']}")
-        resource = osm_resource(
-            country_code=config_item['country_code'],
-            tag=config_item['tag'],
-            value=config_item['value'],
-            element_type=config_item.get('element_type', None),  # Use .get() for optional keys
-            target_date_range=config_item.get('target_date_range', None),  # Default to None if not provided
-            target_date_tolerance_days=config_item.get('target_date_tolerance_days', 0),  # Default to 0 if not provided
-        )
-        result = pipeline.run(
-            resource,
-            table_name=config_item['table_name']
-        )
-        print(result)
+        for country_code in config_item['country_codes']:
+            print('----------')
+            data_versions = get_available_data_versions(
+                country_code=country_code,
+                target_date_range=config_item.get('target_date_range', None),  # Use .get() for optional keys
+                target_date_tolerance_days=config_item.get('target_date_tolerance_days', 0)  # Default to 0 if not provided
+            )
+            print(f"Listing available data versions for country {country_code}: {', '.join(data_versions)}")
+
+            resource = osm_resource(
+                country_code=country_code,
+                tag=config_item['tag'],
+                value=config_item['value'],
+                element_type=config_item.get('element_type', None),  # Use .get() for optional keys
+                target_date_range=config_item.get('target_date_range', None),  # Default to None if not provided
+                target_date_tolerance_days=config_item.get('target_date_tolerance_days', 0),  # Default to 0 if not provided
+            )
+            result = pipeline.run(
+                resource,
+                table_name=config_item['table_name']
+            )
+            print(result)
+
+        print('')
 
 
 if __name__ == "__main__":

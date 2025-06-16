@@ -7,7 +7,11 @@ config_schema = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "country_code": {"type": "string"},
+                    "country_codes": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                    },
                     "tag": {"type": ["string", "null"]},
                     "value": {"type": ["string", "null"]},
                     "element_type": {"type": ["string", "null"]},
@@ -23,7 +27,7 @@ config_schema = {
                     },
                     "table_name": {"type": "string"}
                 },
-                "required": ["country_code", "table_name"]
+                "required": ["country_codes", "table_name"]
             }
         }
     },

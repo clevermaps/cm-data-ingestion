@@ -230,6 +230,7 @@ def get_data(country_code, tag, value, element_type=None, target_date_range=None
 
         # Add "data_version" and "imported_at" fields
         result = dict(zip(column_names, row))
+        result["country_code"] = country_code
         result["data_version"] = date_suffix
         result["imported_at"] = current_datetime
 
