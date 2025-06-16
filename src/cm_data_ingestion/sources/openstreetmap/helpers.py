@@ -211,7 +211,6 @@ def get_data(country_code, tag, value, element_type=None, target_date_range=None
 
     # Step 1: Find the suitable PBF file URL
     pbf_url, date_suffix = find_most_recent_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days)
-    print('Using PBF URL:', pbf_url, 'with date suffix:', date_suffix)
 
     # Step 2: Download the PBF file
     pbf_file_name = f"{country_code}_{date_suffix}_data.pbf"
@@ -225,7 +224,7 @@ def get_data(country_code, tag, value, element_type=None, target_date_range=None
 
     # Step 4: Add additional fields and yield the results
     for index, row in enumerate(rows):
-        if (index + 1) % 100 == 0 or index + 1 == total_nodes:
+        if (index + 1) % 1000 == 0 or index + 1 == total_nodes:
             print(f"Processed {index + 1}/{total_nodes} items")
 
         # Add "data_version" and "imported_at" fields

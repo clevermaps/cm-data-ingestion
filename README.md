@@ -13,7 +13,9 @@ Planned sources:
 
 Run the following command to install the `cm-data-ingestion` package on your system:
 
+```bash
     pip install git+https://github.com/clevermaps/cm-data-ingestion.git
+```
 
 ## Example
 
@@ -29,7 +31,8 @@ Check `pipelines` folder.
 Configure download settings in `config.json`.
 
 Init virtual env, install all deps and run OSM pipeline.
-```
+
+```bash
 python -m venv venv
 source venv/bin/activate
 pip install .
@@ -39,12 +42,12 @@ python pipelines/osm_pipeline.py -c config.json
 
 DuckDB with downloaded data is located at `openstreetmap.db`. Check it with DuckDB CLI:
 
-```
+```bash
 duckdb openstreetmap.db
 ```
 
 or using DuckDB UI:
 
-```
+```bash
 duckdb --ui openstreetmap.db
 ```
