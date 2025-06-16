@@ -192,23 +192,24 @@ def find_suitable_pbf_files(country_code, target_date_range=None, target_date_to
         return [last_file]
 
 
-def find_most_recent_suitable_pbf_file(country_code, target_date_range=None, target_date_tolerance_days=0):
+def find_suitable_pbf_file(country_code, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
     files = find_suitable_pbf_files(
         country_code,
         target_date_range,
         target_date_tolerance_days
     )
-    return files[-1]
+    files.sort(key=lambda x: x[0]) # Sort files by date ascending
+    return files[0] if prefer_older else files[-1]  # Return the last file if prefer_older is True, otherwise the first one
 
 
-def get_data(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0):
+def get_data(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
     """
     Get OSM data for a specific country, filtered by tags and optionally by date.
     """
     current_datetime = datetime.now().isoformat()  # Get the current date-time
 
     # Step 1: Find the suitable PBF file URL
-    date, pbf_url, date_suffix = find_most_recent_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days)
+    date, pbf_url, date_suffix = find_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days, prefer_older)
 
     # Step 2: Download the PBF file
     pbf_file_name = f"{country_code}_{date_suffix}_data.pbf"

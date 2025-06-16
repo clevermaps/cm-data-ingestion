@@ -25,6 +25,7 @@ config_schema = {
                         "type": ["integer", "null"],
                         "minimum": 0
                     },
+                    "target_date_prefer_older": {"type": ["boolean", "null"]},
                     "table_name": {"type": "string"}
                 },
                 "required": ["country_codes", "table_name"]

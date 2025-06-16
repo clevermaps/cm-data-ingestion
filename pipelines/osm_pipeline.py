@@ -92,6 +92,7 @@ def run_osm_pipeline(pipeline_name, destination_path, dataset_name, download_con
                 element_type=config_item.get('element_type', None),  # Use .get() for optional keys
                 target_date_range=config_item.get('target_date_range', None),  # Default to None if not provided
                 target_date_tolerance_days=config_item.get('target_date_tolerance_days', 0),  # Default to 0 if not provided
+                prefer_older=config_item.get('target_date_prefer_older', False)  # Default to False if not provided
             )
             result = pipeline.run(
                 resource,

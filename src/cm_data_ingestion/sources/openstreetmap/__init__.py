@@ -5,8 +5,8 @@ from .helpers import get_data, find_suitable_pbf_files
 # TODO logging
 
 @dlt.resource(max_table_nesting=0)
-def osm_resource(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0):
-    yield from get_data(country_code, tag, value, element_type, target_date_range, target_date_tolerance_days)
+def osm_resource(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
+    yield from get_data(country_code, tag, value, element_type, target_date_range, target_date_tolerance_days, prefer_older)
 
 def get_available_data_versions(country_code, target_date_range=None, target_date_tolerance_days=0):
     """
