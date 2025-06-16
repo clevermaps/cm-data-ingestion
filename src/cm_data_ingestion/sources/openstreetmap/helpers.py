@@ -181,14 +181,15 @@ def find_suitable_pbf_files(country_code, target_date_range=None, target_date_to
         if len(available_files) == 0:
             raise ValueError(f"No suitable PBF file found for country code: {country_code} within the specified date range {target_date_range} and tolerance {target_date_tolerance_days} days.")
 
-        return [(file_url, date_str) for date, file_url, date_str in available_files]
+        return available_files
     else:
         # If no date range is specified, return the latest available file
         last_file = get_last_available_file(pbf_url, country_data['id'])
-        if last_file:
-            return [(last_file[1], last_file[2])]
-        else:
+
+        if not last_file:
             raise ValueError(f"No suitable PBF file found for country code: {country_code}.")
+
+        return [last_file]
 
 
 def find_most_recent_suitable_pbf_file(country_code, target_date_range=None, target_date_tolerance_days=0):
@@ -197,10 +198,7 @@ def find_most_recent_suitable_pbf_file(country_code, target_date_range=None, tar
         target_date_range,
         target_date_tolerance_days
     )
-    if len(files) == 0:
-        return None, None
-    else:
-        return files[-1]
+    return files[-1]
 
 
 def get_data(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0):
@@ -210,7 +208,7 @@ def get_data(country_code, tag, value, element_type=None, target_date_range=None
     current_datetime = datetime.now().isoformat()  # Get the current date-time
 
     # Step 1: Find the suitable PBF file URL
-    pbf_url, date_suffix = find_most_recent_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days)
+    date, pbf_url, date_suffix = find_most_recent_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days)
 
     # Step 2: Download the PBF file
     pbf_file_name = f"{country_code}_{date_suffix}_data.pbf"

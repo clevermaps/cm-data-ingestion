@@ -12,10 +12,11 @@ def get_available_data_versions(country_code, target_date_range=None, target_dat
     """
     Get available data versions for a specific country code.
     This function returns a list of available data versions, which can be used to filter or select specific data versions.
+    Each data version is represented as a string in the format "YYYY-MM-DD".
     """
     pbf_files = find_suitable_pbf_files(
         country_code,
         target_date_range=target_date_range,
         target_date_tolerance_days=target_date_tolerance_days
     )
-    return [date_str for file_url, date_str in pbf_files if date_str is not None]
+    return [file_date.strftime("%Y-%m-%d") for file_date, _, _ in pbf_files if file_date is not None]
