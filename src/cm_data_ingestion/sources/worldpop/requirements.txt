@@ -1,0 +1,8 @@
+dlt
+dlt[duckdb]>=1.7.0
+duckdb>=1.2.0
+rioxarray
+numpy
+pandas
+py7zr
+requests
