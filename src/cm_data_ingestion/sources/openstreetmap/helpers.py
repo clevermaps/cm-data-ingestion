@@ -2,10 +2,10 @@ import os
 import requests
 import duckdb
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from cm_data_ingestion.settings import TEMP_DIR
-from cm_data_ingestion.sources.openstreetmap.settings import GEOFABRIK_INDEX_URL, GEOFABRIK_BASE_URL
+from cm_data_ingestion.sources.openstreetmap.settings import GEOFABRIK_INDEX_URL
 
 
 def get_country_by_iso_code(iso_code):
@@ -32,8 +32,10 @@ def download_pbf(url, output_path, force=False):
 
         response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad HTTP responses
+
         with open(output_path, "wb") as file:
             file.write(response.content)
+
         print(f"Downloaded PBF file to {output_path}")
     else:
         print(f"PBF file already exists at {output_path}, skipping download.")
@@ -71,37 +73,28 @@ def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None, element_type=No
     con.close()
     return rows, column_names
 
-def get_historical_file_url(pbf_url, country_id, target_date):
+def get_available_historical_files(pbf_url, country_id):
     """
-    Find historical OSM file closest to the target date.
-
-    Args:
-        pbf_url (str): URL to the latest PBF file
-        country_id (str): Country ID
-        target_date (str or datetime): Target date
-
-    Returns:
-        tuple: (URL to the historical file, actual date string from filename) or (None, None) if not found
+    Get a list of available historical OSM files based on the provided PBF URL and country ID.
+    :param pbf_url: str
+    :param country_id: str
+    :return: list of tuples containing (date, file_url, date_str)
     """
+    available_dates = []
+
     # Extract the directory from the URL
     directory_url = os.path.dirname(pbf_url)
-
-    # Convert target_date to datetime, removing .0 suffix if present
-    if isinstance(target_date, str):
-        target_date = target_date.split('.')[0]  # Remove decimal part if present
-        target_date = datetime.strptime(target_date, "%Y-%m-%d")
 
     # Get the directory listing
     response = requests.get(directory_url)
     if response.status_code != 200:
-        return None, None
+        raise Exception(f"Failed to access directory: {directory_url} with status code {response.status_code}")
 
     # Parse HTML to find available historical files
     soup = BeautifulSoup(response.content, 'html.parser')
-    available_dates = []
 
     # Look for links with pattern country-YYMMDD.osm.pbf
-    date_pattern = re.compile(rf'{os.path.basename(country_id)}-(\d{{6}})\.osm\.pbf')
+    date_pattern = re.compile(rf'^{os.path.basename(country_id)}-(\d{{6}})\.osm\.pbf$')
     for link in soup.find_all('a'):
         href = link.get('href')
         if href and date_pattern.search(href):
@@ -111,22 +104,65 @@ def get_historical_file_url(pbf_url, country_id, target_date):
                 year_prefix = '20' if int(date_str[:2]) < 50 else '19'
                 full_date_str = f"{year_prefix}{date_str}"
                 date = datetime.strptime(full_date_str, "%Y%m%d")
-                available_dates.append((date, href, date_str))
+                available_dates.append((
+                    date,
+                    os.path.join(directory_url, href),
+                    date_str
+                ))
             except ValueError:
                 continue
 
-    if not available_dates:
-        return None, None
+    return available_dates
 
-    # Find the date closest to target_date
-    closest_date = min(available_dates, key=lambda x: abs(x[0] - target_date))
-    return f"{directory_url}/{closest_date[1]}", closest_date[2]
 
-def get_data(country_code, tag, value, element_type=None, target_date=None):
+def get_available_historical_files_in_range(pbf_url, country_id, target_date_range, target_date_tolerance_days=0):
     """
-    Get OSM data for a specific country, filtered by tags and optionally by date.
+    Find historical OSM file URL based on the provided PBF URL and target date range.
+    Args:
+        pbf_url (str): The URL of the PBF file.
+        country_id (str): The country ID to match in the file name.
+        target_date_range (tuple): A tuple containing start and end dates as strings in 'YYYY-MM-DD' format.
+        target_date_tolerance_days (int): Number of days to allow for tolerance in date matching.
+    Returns:
+        list: A list of tuples containing (date, file_url, date_str) for matching files.
     """
+
+    # Convert target_date_range to datetime, removing .0 suffix if present
+    start_date = target_date_range[0].split('.')[0]  # Remove decimal part if present
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = target_date_range[1].split('.')[0]  # Remove decimal part if present
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Get available historical files
+    available_dates = get_available_historical_files(pbf_url, country_id)
+
+    # Filter only relevant files within the target date range and tolerance
+    filtered_available_dates = [
+        (date, file_url, date_str) for date, file_url, date_str in available_dates
+        if start_date - timedelta(days=target_date_tolerance_days) <= date <= end_date + timedelta(days=target_date_tolerance_days)
+    ]
+
+    return filtered_available_dates
+
+def get_last_available_file(pbf_url, country_id):
+    """
+    Get the last available historical OSM file URL based on the provided PBF URL and country ID.
+    :param pbf_url: str
+    :param country_id: str
+    :return: tuple containing (date, file_url, date_str) of the last available file
+    """
+    available_files = get_available_historical_files(pbf_url, country_id)
+    if not available_files:
+        return None
+
+    # Sort by date and return the last one
+    available_files.sort(key=lambda x: x[0])
+    return available_files[-1]
+
+
+def find_suitable_pbf_files(country_code, target_date_range=None, target_date_tolerance_days=0):
     country_data = get_country_by_iso_code(country_code)
+
     if not country_data:
         raise ValueError(f"No data found for ISO code: {country_code}")
 
@@ -134,32 +170,66 @@ def get_data(country_code, tag, value, element_type=None, target_date=None):
     if not pbf_url:
         raise ValueError(f"No PBF URL found for ISO code: {country_code}")
 
-    date_suffix = "latest"
+    if target_date_range:
+        available_files = get_available_historical_files_in_range(
+            pbf_url,
+            country_data['id'],
+            target_date_range,
+            target_date_tolerance_days
+        )
 
-    if target_date:
-        historical_pbf_url, actual_date_str = get_historical_file_url(pbf_url, country_data['id'], target_date)
-        if historical_pbf_url:
-            pbf_url = historical_pbf_url
-            # Use the actual date from filename instead of target date
-            date_suffix = actual_date_str
-            print(f"Found historical data for {country_code} near date: {target_date}. Using URL: {pbf_url}")
-        else:
-            print(f"No historical data found for {country_code} near date: {target_date}. Using latest data instead.")
+        if len(available_files) == 0:
+            raise ValueError(f"No suitable PBF file found for country code: {country_code} within the specified date range {target_date_range} and tolerance {target_date_tolerance_days} days.")
+
+        return available_files
     else:
-        print(f"Using latest data from URL: {pbf_url}")
+        # If no date range is specified, return the latest available file
+        last_file = get_last_available_file(pbf_url, country_data['id'])
 
-    # Step 1: Download the PBF file
+        if not last_file:
+            raise ValueError(f"No suitable PBF file found for country code: {country_code}.")
+
+        return [last_file]
+
+
+def find_suitable_pbf_file(country_code, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
+    files = find_suitable_pbf_files(
+        country_code,
+        target_date_range,
+        target_date_tolerance_days
+    )
+    files.sort(key=lambda x: x[0]) # Sort files by date ascending
+    return files[0] if prefer_older else files[-1]  # Return the last file if prefer_older is True, otherwise the first one
+
+
+def get_data(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
+    """
+    Get OSM data for a specific country, filtered by tags and optionally by date.
+    """
+    current_datetime = datetime.now().isoformat()  # Get the current date-time
+
+    # Step 1: Find the suitable PBF file URL
+    date, pbf_url, date_suffix = find_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days, prefer_older)
+
+    # Step 2: Download the PBF file
     pbf_file_name = f"{country_code}_{date_suffix}_data.pbf"
     pbf_file_path = os.path.join(TEMP_DIR, pbf_file_name)
     download_pbf(pbf_url, pbf_file_path)
 
-    # Process the rest as before
+    # Step 3: Process the PBF file with DuckDB
     rows, column_names = process_pbf_with_duckdb(pbf_file_path, tag, value, element_type)
     total_nodes = len(rows)
     print(f"Total items fetched: {total_nodes}")
 
+    # Step 4: Add additional fields and yield the results
     for index, row in enumerate(rows):
-        if (index + 1) % 100 == 0 or index + 1 == total_nodes:
+        if (index + 1) % 1000 == 0 or index + 1 == total_nodes:
             print(f"Processed {index + 1}/{total_nodes} items")
 
-        yield dict(zip(column_names, row))
+        # Add "data_version" and "imported_at" fields
+        result = dict(zip(column_names, row))
+        result["country_code"] = country_code
+        result["data_version"] = date_suffix
+        result["imported_at"] = current_datetime
+
+        yield result
