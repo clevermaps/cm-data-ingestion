@@ -1,15 +1,10 @@
 import os
-import json
 import urllib.request
 import zipfile
 import py7zr
-import pandas as pd
 import numpy as np
 import rioxarray
 from datetime import datetime
-import dlt
-
-from .settings import TEMP_DIR
 
 def current_timestamp():
     return datetime.now().strftime("%Y/%m/%d %H:%M")
@@ -69,62 +64,52 @@ def convert_to_points(tif_path, db_name):
         df = df[df["value"] != 9999]
         df = df[df["value"] > -1e+30]
         df["name"] = db_name
-        df["date"] = current_timestamp()
+        # df["date"] = current_timestamp()
 
-        return df[["name", "lon", "lat", "value", "date"]]
+        return df[["name", "lon", "lat", "value"]]
+    
     except Exception as e:
         print(f"[ERROR] Failed to convert {tif_path} to points: {e}")
         return None
 
-def make_raster_resource(json_path):
-    if not os.path.exists(json_path):
-        raise FileNotFoundError(f"JSON file not found: {json_path}")
 
-    with open(json_path, "r") as f:
-        raster_info = json.load(f)
+def raster_to_points(url, file_name, temp_dir):
 
-    @dlt.resource(name="raster_data")
-    def raster_to_points():
-        for entry in raster_info["data"]:
-            url = entry["url"]
-            base_name = os.path.basename(url)
-            archive_path = os.path.join(TEMP_DIR, base_name)
-            user_name = entry["name"]
+    base_name = os.path.basename(url)
+    archive_path = os.path.join(temp_dir, base_name)
 
-            if not os.path.exists(archive_path):
-                if not download_file(url, archive_path) is True:
-                    continue
+    if not os.path.exists(archive_path):
+        if not download_file(url, archive_path) is True:
+            return
 
-            if base_name.lower().endswith((".tif", ".tiff")):
-                tif_files = [archive_path]
-                name_source = "json"
-            elif base_name.lower().endswith((".zip", ".7z")):
-                extract_path = os.path.join(TEMP_DIR, base_name + "_extract")
-                os.makedirs(extract_path, exist_ok=True)
-                if extract_archive(archive_path, extract_path) is None:
-                    continue
-                tif_files = find_tif_files(extract_path)
-                if not tif_files:
-                    print(f"[ERROR] No .tif files found in archive: {base_name}")
-                    continue
-                name_source = "tif" if len(tif_files) > 1 else "json"
-            else:
-                print(f"[ERROR] Unsupported file type: {base_name}")
-                continue
+    if base_name.lower().endswith((".tif", ".tiff")):
+        tif_files = [archive_path]
+        name_source = "json"
+    elif base_name.lower().endswith((".zip", ".7z")):
+        extract_path = os.path.join(temp_dir, base_name + "_extract")
+        os.makedirs(extract_path, exist_ok=True)
+        if extract_archive(archive_path, extract_path) is None:
+            return
+        tif_files = find_tif_files(extract_path)
+        if not tif_files:
+            print(f"[ERROR] No .tif files found in archive: {base_name}")
+            return
+        name_source = "tif" if len(tif_files) > 1 else "json"
+    else:
+        print(f"[ERROR] Unsupported file type: {base_name}")
+        return
 
-            for tif_path in tif_files:
-                tif_filename = os.path.basename(tif_path)
-                db_name = tif_filename if name_source == "tif" else user_name
-                df = convert_to_points(tif_path, db_name)
-                if df is None:
-                    continue
-                for row in df.itertuples(index=False):
-                    yield {
-                        "name": row.name,
-                        "lon": row.lon,
-                        "lat": row.lat,
-                        "value": row.value,
-                        "date": row.date
-                    }
-
-    return raster_to_points
+    for tif_path in tif_files:
+        tif_filename = os.path.basename(tif_path)
+        db_name = tif_filename if name_source == "tif" else file_name
+        df = convert_to_points(tif_path, db_name)
+        if df is None:
+            continue
+        
+        for row in df.itertuples(index=False):
+            yield {
+                "name": row.name,
+                "lon": row.lon,
+                "lat": row.lat,
+                "value": row.value
+            }

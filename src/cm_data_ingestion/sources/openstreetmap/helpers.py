@@ -4,8 +4,21 @@ import duckdb
 import re
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
-from cm_data_ingestion.settings import TEMP_DIR
 from cm_data_ingestion.sources.openstreetmap.settings import GEOFABRIK_INDEX_URL
+
+
+def get_available_data_versions(country_code, target_date_range=None, target_date_tolerance_days=0):
+    """
+    Get available data versions for a specific country code.
+    This function returns a list of available data versions, which can be used to filter or select specific data versions.
+    Each data version is represented as a string in the format "YYYY-MM-DD".
+    """
+    pbf_files = find_suitable_pbf_files(
+        country_code,
+        target_date_range=target_date_range,
+        target_date_tolerance_days=target_date_tolerance_days
+    )
+    return [file_date.strftime("%Y-%m-%d") for file_date, _, _ in pbf_files if file_date is not None]
 
 
 def get_country_by_iso_code(iso_code):
@@ -202,7 +215,7 @@ def find_suitable_pbf_file(country_code, target_date_range=None, target_date_tol
     return files[0] if prefer_older else files[-1]  # Return the last file if prefer_older is True, otherwise the first one
 
 
-def get_data(country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
+def get_data(temp_dir, country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
     """
     Get OSM data for a specific country, filtered by tags and optionally by date.
     """
@@ -213,7 +226,7 @@ def get_data(country_code, tag, value, element_type=None, target_date_range=None
 
     # Step 2: Download the PBF file
     pbf_file_name = f"{country_code}_{date_suffix}_data.pbf"
-    pbf_file_path = os.path.join(TEMP_DIR, pbf_file_name)
+    pbf_file_path = os.path.join(temp_dir, pbf_file_name)
     download_pbf(pbf_url, pbf_file_path)
 
     # Step 3: Process the PBF file with DuckDB

@@ -2,11 +2,13 @@
   "data": [
     {
       "url": "https://data.worldpop.org/GIS/Mastergrid/Global_2000_2020/ABW/L0/abw_level0_100m_2000_2020.tif",
-      "name": "abw_level0_100m_2000_2020.tif"
+      "file_name": "abw_level0_100m_2000_2020.tif",
+      "table_name": "pop_100m_2000_2020__abw"
     },
     {
       "url": "https://data.worldpop.org/GIS/Development_and_health_indicators/Individual_countries/Poverty/MWI/171.7z",
-      "name": "171.7z"
+      "file_name": "171.7z",
+      "table_name": "development_health__poverty_171"
     }
   ]
 }

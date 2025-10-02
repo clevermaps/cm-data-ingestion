@@ -1,16 +1,26 @@
 import dlt
 
-from .helpers import get_data_bbox_arrow, get_data_bbox_divide_arrow
+from .helpers import get_data_bbox_arrow
 
 # Overturemaps schema
 # https://til.simonwillison.net/overture-maps/overture-maps-parquet
 
-# TODO logging
 
-@dlt.resource(max_table_nesting=0)
-def ovm_resource(theme, type, bbox, release, bbox_divide_zoom=None):
+@dlt.source(name="overturemaps")
+def ovm(configs, bbox, release):
+    """
+    configs: list[dict], kde každý dict má např. theme, type, bbox, release
+    """
+    for cfg in configs:
+        print(cfg)
+        ovm_theme = cfg["theme"]
+        ovm_type = cfg["type"]
+        table_name = cfg['table_name']
+    
+        # TODO max_table_nesting=0 to pipeline config
+        yield dlt.resource(
+            get_data_bbox_arrow(ovm_theme, ovm_type, bbox, release),
+            name=f'{table_name}',
+            max_table_nesting=0
+        )
 
-    if not bbox_divide_zoom:
-        yield from get_data_bbox_arrow(theme, type, bbox, release)
-    else:
-        yield from get_data_bbox_divide_arrow(theme, type, bbox, release, bbox_divide_zoom)

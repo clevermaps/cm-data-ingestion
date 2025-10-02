@@ -1,0 +1,1 @@
+CATALOG_SCHEDULE_URL = "https://api.github.com/repos/MobilityData/mobility-database-catalogs/contents/catalogs/sources/gtfs/schedule"

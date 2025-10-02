@@ -1,0 +1,13 @@
+{
+  "database_path": "gtfs-transit-scheduled.db",
+  "downloads": [
+    {
+      "country_code": "cz",
+      "city": "Praha",
+      "gtfs_type": "schedule",
+      "provider": "Pražská Integrovaná doprava",
+      "x-coordinate": null,
+      "y-coordinate": null
+    }
+  ]
+}

@@ -9,7 +9,7 @@
       "target_date_range": null,
       "target_date_tolerance_days": 0,
       "target_date_prefer_older": false,
-      "table_name": "ad__places_towns"
+      "table_name": "places_towns"
     },
     {
       "country_codes": ["li", "lu"],
@@ -19,7 +19,7 @@
       "target_date_range": ["2023-01-01", "2023-01-01"],
       "target_date_tolerance_days": 0,
       "target_date_prefer_older": false,
-      "table_name": "li_lu__amenities_restaurants"
+      "table_name": "amenities_restaurants"
     },
     {
       "country_codes": ["mc"],
@@ -29,7 +29,7 @@
       "target_date_range": ["2022-12-01", "2024-12-01"],
       "target_date_tolerance_days": 0,
       "target_date_prefer_older": false,
-      "table_name": "mc__government_all"
+      "table_name": "government_all"
     },
     {
       "country_codes": ["mc"],
@@ -39,7 +39,7 @@
       "target_date_range": ["2022-12-01", "2024-12-01"],
       "target_date_tolerance_days": 0,
       "target_date_prefer_older": true,
-      "table_name": "mc__government_all__older_data"
+      "table_name": "government_all__older_data"
     },
     {
       "country_codes": ["mc", "li"],
@@ -49,7 +49,7 @@
       "target_date_range": ["2024-12-01", "2024-12-12"],
       "target_date_tolerance_days": 60,
       "target_date_prefer_older": false,
-      "table_name": "mc_li__highways_all"
+      "table_name": "highways_all"
     }
   ]
 }

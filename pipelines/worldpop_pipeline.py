@@ -1,29 +1,17 @@
-import sys
-import os
-
-# Add project root to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import dlt
-from cm_data_ingestion.sources.worldpop.helpers import make_raster_resource
+from cm_data_ingestion.sources.worldpop import worldpop
 
-print("sys.argv:", sys.argv)
+from common.config import load_source_config
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("[ERROR] Usage: python pipelines/worldpop_pipeline.py <path_to_json>")
-        sys.exit(1)
+temp_dir = './data'
 
-    json_path = sys.argv[1]
+config = load_source_config("./configs/worldpop_config.json")['data']
 
-    pipeline = dlt.pipeline(
-        pipeline_name="raster_data",
-        destination="duckdb",
-        dataset_name="data",
-        full_refresh=True
-    )
+pipeline = dlt.pipeline(
+    pipeline_name="worldpop_pipeline",
+    destination=dlt.destinations.duckdb('./data/dlt.duckdb'),
+    dataset_name="worldpop"
+)
 
-    resource = make_raster_resource(json_path)
-    print("Writing data to DuckDB...")
-    pipeline.run(resource())
-    print("✅ Done.")
+result = pipeline.run(worldpop(config, temp_dir))
+print(result)
