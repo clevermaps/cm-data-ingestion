@@ -80,27 +80,27 @@ def download_and_yield_rows(data_entry):
     if not latest_url:
         return
 
-    try:
-        print(f"Processing URL: {latest_url}")
-        response = requests.get(latest_url, stream=True, timeout=60)
-        response.raise_for_status()
+    print(f"Processing URL: {latest_url}")
+    response = requests.get(latest_url, stream=True, timeout=60)
+    response.raise_for_status()
 
-        with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
-            for name in archive.namelist():
-                if name.endswith(".txt"):
-                    with archive.open(name) as f:
-                        reader = csv.DictReader(io.TextIOWrapper(f, encoding="utf-8"))
-                        for row in reader:
-                            row["source_url"] = latest_url
-                            row["source_file"] = name
-                            table_name = f"{os.path.splitext(os.path.basename(latest_url))[0]}_{name}"
-                            yield dlt.mark.with_table_name(row, table_name=table_name)
-
-    except Exception as e:
-        print(f"Failed to process {latest_url}: {e}")
+    with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
+        for name in archive.namelist():
+            if name.endswith(".txt"):
+                with archive.open(name) as f:
+                    reader = csv.DictReader(io.TextIOWrapper(f, encoding="utf-8"))
+                    for row in reader:
+                        row["source_url"] = latest_url
+                        row["source_file"] = name
+                        #table_name = f"{os.path.splitext(os.path.basename(latest_url))[0]}_{name}"
+                        table_name = name.replace('.txt', '')
+                        
+                        yield dlt.mark.with_table_name(row, table_name=table_name)
+                        
 
 
 def get_data(country_code, city, gtfs_type, provider=None, x_coordinate=None, y_coordinate=None):
+    
     info_data = fetch_and_filter_files(
         country_code=country_code,
         city=city,

@@ -1,0 +1,21 @@
+{
+  "database_path": "gtfs-mobility-scheduled.db",
+  "downloads": [
+    {
+      "country_code": "cz",
+      "city": "Olomouc",
+      "gtfs_type": "schedule",
+      "provider": "Dopravní podnik města Olomouce, a. s.",
+      "x-coordinate": null,
+      "y-coordinate": null
+    },
+    {
+      "country_code": "cz",
+      "city": "Brno",
+      "gtfs_type": "schedule",
+      "provider": "Integrated Transit System of the South Moravian Region (IDS JMK)",
+      "x-coordinate": null,
+      "y-coordinate": null
+    }
+  ]
+}

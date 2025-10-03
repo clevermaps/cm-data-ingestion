@@ -1,0 +1,9 @@
+version: 2
+sources:
+  - name: ovm
+    schema: ovm_raw
+    tables:
+      - name: places__place
+      - name: divisions__division
+
+  

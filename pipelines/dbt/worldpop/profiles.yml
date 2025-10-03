@@ -1,0 +1,12 @@
+worldpop:
+  outputs:
+    dev:
+      type: duckdb
+      path: ../../data/data.duckdb
+      extensions:
+        - httpfs
+        - spatial
+      settings:
+        memory_limit: "4GB"
+        threads: 1
+  target: dev
