@@ -25,5 +25,5 @@ def osm(configs, temp_dir):
                     cfg.get("target_date_tolerance_days", 0), 
                     cfg.get("prefer_older", False)
                 ),
-                name=f'{table_name}__{cc}'
+                name=table_name
             )
