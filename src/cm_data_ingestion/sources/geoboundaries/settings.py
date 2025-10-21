@@ -1,0 +1,1 @@
+GEOBOUNDARIES_URL='https://www.geoboundaries.org/api/current/gbOpen/{country_code}/{adm_level}/'

@@ -1,0 +1,12 @@
+ovm:
+  outputs:
+    dev:
+      type: duckdb
+      path: ../../data/dlt.duckdb
+      extensions:
+        - httpfs
+        - spatial
+      settings:
+        memory_limit: "4GB"
+        threads: 1
+  target: dev

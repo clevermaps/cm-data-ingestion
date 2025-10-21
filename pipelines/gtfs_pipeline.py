@@ -6,7 +6,7 @@ from cm_data_ingestion.sources.gtfs.mobilitydatabase import gtfs_mobility
 
 
 destination = dlt.destinations.duckdb("./data/dlt.duckdb")
-config = load_source_config("./configs/gtfs_mobility_test_config.json")['downloads']
+config = load_source_config("./configs/gtfs_mobility_ol_config.json")['downloads']
 dlt_resource = gtfs_mobility(config)
 run_dlt(dlt_resource, destination, 'gtfs_raw')
 

@@ -5,5 +5,7 @@ sources:
     tables:
       - name: places__place
       - name: divisions__division
+      - name: divisions__area
+      - name: addresses__address
 
   
