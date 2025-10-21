@@ -4,11 +4,12 @@ from .helpers import get_data
 
 
 @dlt.source(name="geoboundaries")
-def geoboundaries(country_code, admin_level, table_name):
+def geoboundaries(configs):
     
-    yield dlt.resource(
-        get_data(country_code, admin_level),
-        name=f'{table_name}',
-        max_table_nesting=0
-    )
+    for cfg in configs:
+        yield dlt.resource(
+            get_data(cfg['country_code'], cfg['admin_level']),
+            name=cfg['table_name'],
+            max_table_nesting=0
+        )
 

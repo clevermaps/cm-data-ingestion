@@ -1,5 +1,5 @@
-{
+[{
     "country_code": "CZE",
     "admin_level": "ADM4",
-    "table_name": "geoboundaries"
-}
+    "table_name": "geoboundaries_adm4"
+}]
