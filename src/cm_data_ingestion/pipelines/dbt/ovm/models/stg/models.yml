@@ -1,0 +1,16 @@
+models:
+- name: places_place
+  config:
+    alias: places_place
+- name: divisions_division
+  config:
+    alias: ovm__divisions_division
+    enabled: false
+- name: divisions_division_area
+  config:
+    alias: ovm__divisions_division_area
+    enabled: false
+- name: addresses_address
+  config:
+    alias: ovm__addresses_address
+    enabled: false

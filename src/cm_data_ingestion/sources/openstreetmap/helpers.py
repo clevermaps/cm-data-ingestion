@@ -59,7 +59,7 @@ def setup_duckdb_extensions(con):
     con.execute("LOAD 'spatial';")
 
 
-def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None, element_type=None):
+def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None, element_type=None, batch_size=1000):
     con = duckdb.connect()
     setup_duckdb_extensions(con)
 
@@ -82,9 +82,17 @@ def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None, element_type=No
 
     result = con.execute(query)
     column_names = [desc[0] for desc in result.description]  # Get column names
-    rows = result.fetchall()
+
+    # Instead of fetching all rows at once, fetch in batches and yield
+    while True:
+        rows = result.fetchmany(batch_size)
+        if not rows:
+            break
+        for row in rows:
+            yield row, column_names
+
     con.close()
-    return rows, column_names
+
 
 def get_available_historical_files(pbf_url, country_id):
     """
@@ -156,6 +164,7 @@ def get_available_historical_files_in_range(pbf_url, country_id, target_date_ran
     ]
 
     return filtered_available_dates
+
 
 def get_last_available_file(pbf_url, country_id):
     """
@@ -229,15 +238,12 @@ def get_data(temp_dir, country_code, tag, value, element_type=None, target_date_
     pbf_file_path = os.path.join(temp_dir, pbf_file_name)
     download_pbf(pbf_url, pbf_file_path)
 
-    # Step 3: Process the PBF file with DuckDB
-    rows, column_names = process_pbf_with_duckdb(pbf_file_path, tag, value, element_type)
-    total_nodes = len(rows)
-    print(f"Total items fetched: {total_nodes}")
-
-    # Step 4: Add additional fields and yield the results
-    for index, row in enumerate(rows):
-        if (index + 1) % 1000 == 0 or index + 1 == total_nodes:
-            print(f"Processed {index + 1}/{total_nodes} items")
+    # Step 3: Process the PBF file with DuckDB in batches
+    total_items_processed = 0
+    for row, column_names in process_pbf_with_duckdb(pbf_file_path, tag, value, element_type):
+        total_items_processed += 1
+        if total_items_processed % 1000 == 0:
+            print(f"Processed {total_items_processed} items")
 
         # Add "data_version" and "imported_at" fields
         result = dict(zip(column_names, row))
@@ -246,3 +252,5 @@ def get_data(temp_dir, country_code, tag, value, element_type=None, target_date_
         result["imported_at"] = current_datetime
 
         yield result
+
+    print(f"Total items fetched: {total_items_processed}")

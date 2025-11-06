@@ -1,0 +1,4 @@
+models:
+- name: amenity
+  config:
+    alias: osm__amenity

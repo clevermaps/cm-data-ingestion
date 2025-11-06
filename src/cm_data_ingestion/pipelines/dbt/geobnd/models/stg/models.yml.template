@@ -1,0 +1,24 @@
+models:
+- name: geoboundaries__adm0
+  config:
+    alias: geoboundaries__adm0
+- name: geoboundaries__adm1
+  config:
+    alias: geoboundaries__adm1
+- name: geoboundaries__adm2
+  config:
+    alias: geoboundaries__adm2
+- name: geoboundaries__adm3
+  config:
+    alias: geoboundaries__adm3
+- name: geoboundaries__adm4
+  config:
+    alias: geoboundaries__adm4
+- name: geoboundaries__adm5
+  config:
+    alias: geoboundaries__adm5
+
+
+
+
+

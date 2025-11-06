@@ -1,5 +1,6 @@
 import requests
 import geopandas as gpd
+import os
 
 from .settings import GEOBOUNDARIES_URL
 

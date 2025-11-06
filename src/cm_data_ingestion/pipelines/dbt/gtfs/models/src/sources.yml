@@ -1,0 +1,13 @@
+version: 2
+sources:
+- name: gtfs
+  schema: gtfs_raw
+  tables:
+  - name: stops
+    identifier: stops
+  - name: stop_times
+    identifier: stop_times
+  - name: routes
+    identifier: routes
+  - name: trips
+    identifier: trips

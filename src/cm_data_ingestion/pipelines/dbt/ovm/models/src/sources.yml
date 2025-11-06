@@ -1,0 +1,13 @@
+version: 2
+sources:
+- name: ovm
+  schema: ovm_raw
+  tables:
+  - name: places_place
+    identifier: places__place
+  - name: addresses_address
+    identifier: addresses__address
+  - name: divisions__division
+    identifier: divisions_division
+  - name: divisions_division_area
+    identifier: divisions__division_area

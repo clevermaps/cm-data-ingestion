@@ -1,0 +1,9 @@
+version: 2
+sources:
+  - name: worldpop
+    schema: worldpop_raw
+    tables:
+      - name: population
+        identifier: population
+
+  

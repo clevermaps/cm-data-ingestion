@@ -1,8 +1,0 @@
-version: 2
-sources:
-  - name: geobnd
-    schema: geobnd_raw
-    tables:
-      - name: geoboundaries
-
-  

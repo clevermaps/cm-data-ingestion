@@ -1,8 +1,0 @@
-{
-    "release": "2025-09-24.0",
-    "bbox": [17.181330,49.565584,17.338829,49.617439],
-    "data": [
-        {"theme": "divisions", "type": "division_boundary", "table_name": "divisions__boundary"},
-        {"theme": "divisions", "type": "division_area", "table_name": "divisions__area"}
-    ]
-}

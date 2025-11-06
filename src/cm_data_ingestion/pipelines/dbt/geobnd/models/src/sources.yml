@@ -1,0 +1,19 @@
+version: 2
+sources:
+  - name: geobnd
+    schema: geobnd_raw
+    tables:
+      - name: geoboundaries__adm0
+        identifier: geoboundaries__adm0
+      - name: geoboundaries__adm1
+        identifier: geoboundaries__adm1
+      - name: geoboundaries__adm2
+        identifier: geoboundaries__adm2
+      - name: geoboundaries__adm3
+        identifier: geoboundaries__adm3
+      - name: geoboundaries__adm4
+        identifier: geoboundaries__adm4
+      - name: geoboundaries__adm5
+        identifier: geoboundaries__adm5
+
+  

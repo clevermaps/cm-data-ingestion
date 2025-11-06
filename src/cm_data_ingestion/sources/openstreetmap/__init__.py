@@ -3,27 +3,28 @@ from .helpers import get_data
 
 
 @dlt.source(name="openstreetmap")
-def osm(configs, temp_dir):
+def osm(items, options):
     """
     configs: list[dict], kde každý dict má country_code, tag, value a dalsi volitelne parametry
     """
-    for cfg in configs:
-        print(cfg)
+    for item in items:
+        print(item)
 
-        for cc in cfg["country_codes"]:
-            tag = cfg["tag"]
-            value = cfg["value"]
-            table_name = cfg['table_name']
+        for cc in item["country_codes"]:
+            tag = item["tag"]
+            value = item["value"]
+            table_name = item['table_name']
+            
             yield dlt.resource(
                 get_data(
-                    temp_dir,
+                    options['temp_dir'],
                     cc, 
                     tag, 
                     value, 
-                    cfg.get("element_type", None), 
-                    cfg.get("target_date_range", None), 
-                    cfg.get("target_date_tolerance_days", 0), 
-                    cfg.get("prefer_older", False)
+                    item.get("element_type", None), 
+                    item.get("target_date_range", None), 
+                    item.get("target_date_tolerance_days", 0), 
+                    item.get("prefer_older", False)
                 ),
                 name=table_name
             )
