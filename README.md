@@ -7,6 +7,7 @@ Currently supported sources:
 * OpenStreetMap
 * WorldPop
 * GTFS
+* GeoBoundaries
 
 ## Installation
 
@@ -16,123 +17,56 @@ Run the following command to install the `cm-data-ingestion` package on your sys
     pip install git+https://github.com/clevermaps/cm-data-ingestion.git
 ```
 
-## Example
+## Examples
 
-Check `pipelines` folder.
+Example configurations and usage can be found in `example.py`, demonstrating how to set up ingestion for various sources.
 
-## Changelog
+
+## Technical overview
+
+## Overview
+
+The `cm-data-ingestion` repository is designed to facilitate the ingestion, processing, and management of various geospatial and transit data sources. It is structured into several key components including sources, pipelines, and helpers, enabling modular and extensible data workflows.
+
+### Architecture
+
+- **Sources**: Located in `src/cm_data_ingestion/sources`, this directory contains modules responsible for fetching and processing data from different providers such as Geoboundaries, GTFS (General Transit Feed Specification), OpenStreetMap, OvertureMaps, and WorldPop. Each source module encapsulates the logic specific to its data format and API.
+
+- **Pipelines**: Found in `src/cm_data_ingestion/pipelines`, pipelines orchestrate the data ingestion workflows. They manage the sequence of operations, including data extraction, loading, and optionaly basic normalization transformations.
+
+- **Helpers**: Utility functions and shared logic are organized under helpers within both sources and pipelines. These include common data processing routines, API interaction helpers, and configuration management.
+
+### Data Flow
+
+1. **Configuration**: Users define ingestion configurations specifying providers, data items, and options.
+
+2. **Data Extraction**: Source modules fetch raw data from external APIs or files, handling authentication, downloading, and initial parsing.
+
+3. **Loading**: Processed data is loaded into DuckDB databases or other destinations for downstream use.
+
+4. **Transformation**: Optionaly, data is normalized using basic staging transformations defined as dbt models.
+
+
+
+### Key Technologies
+
+- Python 3 for core logic and scripting.
+- DuckDB for embedded analytical database capabilities.
+- PyArrow and related libraries for efficient data handling.
+- Requests and other HTTP libraries for API communication.
+- Pytest for unit testing.
+
+### Extensibility
+
+The modular design allows easy addition of new data sources or pipelines by adhering to established interfaces and patterns.
+
+
+# Changelog
 
 0.0.1 Initial version
 
 
-## Running OVM pipeline
-
-TODO
-
-## Running OSM pipeline
-
-Configure download settings in `config.json`.
-
-Init virtual env, install all deps and run OSM pipeline.
-
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install .
-pip install -r src/cm_data_ingestion/sources/openstreetmap/requirements.txt
-python pipelines/osm_pipeline.py -c config.json
-```
-
-DuckDB with downloaded data is located at `openstreetmap.db`. Check it with DuckDB CLI:
-
-```bash
-duckdb openstreetmap.db
-```
-
-or using DuckDB UI:
-
-```bash
-duckdb --ui openstreetmap.db
-```
-DuckDB with downloaded data is located at `openstreetmap.db`.
-
-
-## Running Worldpop pipeline
-
-Configure download settings in `config_worldpop.json`.
-
-Init virtual env, install all deps and run OSM pipeline.
-```
-python -m venv venv
-source venv/bin/activate
-pip install .
-pip install -r src/cm_data_ingestion/sources/worldpop/requirements.txt
-python pipelines/worldpop_pipeline.py -c config_worldpop.json
-```
-
-DuckDB with downloaded data is located at `worldpop.duckdb`.
 
 
 
-## Running GTFS Mobility pipeline
 
-Configure download settings in `mobilityConfig.json`.
-
-`GITHUB_TOKEN` is needed to avoid rate limiting when downloading data from GitHub.
-
-Init virtual env, install all deps and run OSM pipeline.
-```
-python -m venv venv
-source venv/bin/activate
-pip install .
-pip install -r src/cm_data_ingestion/sources/mobilitydatabase/requirements.txt
-export GITHUB_TOKEN="XXXXXXXXXXXXXXXXXXXXXX"
-python pipelines/mobility_pipeline.py -c mobilityConfig.json
-```
-
-DuckDB with downloaded data is located at `gtfs-mobility-scheduled.db`.
-
-## Running GTFS Transit pipeline
-
-Configure download settings in `transitConfig.json`.
-
-`API_TOKEN` is needed to access Transit API. 
-It can be generated after creating an account on https://transit.land/.
-
-Init virtual env, install all deps and run OSM pipeline.
-```
-python -m venv venv
-source venv/bin/activate
-pip install .
-pip install -r src/cm_data_ingestion/sources/mobilitydatabase/requirements.txt
-export API_TOKEN="XXXXXXXXXXXXXXXXXXXXXX"
-python pipelines/mobility_pipeline.py -c transitConfig.json
-```
-
-DuckDB with downloaded data is located at `gtfs-transit-scheduled.db`.
-
-# How ingestion works
-
-## Mobility Database
-
-Everything is located in the Git repository. For local processing, the app is using the following URL to search in catalog:
-https://github.com/MobilityData/mobility-database-catalogs.git
-
-
-In the directory: `mobility-database-catalogs/catalogs/sources/gtfs`, it can be chosen whether you want to work with **Realtime** or **Schedule**.
-We selected to use scheduled data.
-
-In each directory, there are JSON files for individual transport systems. The description of the meaning of each part of the JSON file can be found here:  
-[Mobility Database Schemas](https://github.com/MobilityData/mobility-database-catalogs/tree/main/schemas)
-
-If you want to download data based on geolocation, the app goes through individual JSON files and look into the attribute `location.bounding_box` to check whether your coordinates are within the defined area.  
-You can search by country. In `location.country_code`, there is the country code abbreviation.  
-In `subdivision_name`, there is a more detailed description, but it is not necessarily a city. This attribute is available only in **Schedule**. Unfortunately. 
-However, the country can be identified in both cases based on the prefix in the file name.
-
-There is a download link in the `urls.direct_download` attribute.
-- In **Schedule**, the link points to a ZIP file.
-
-## Transit Database
-
-This API uses the same approach as Mobility Database. The difference is that the data is obtained from https://transit.land/api/v2/rest/feeds?bbox=16.50,49.15,16.75,49.30&apikey=XXXXXXXX
