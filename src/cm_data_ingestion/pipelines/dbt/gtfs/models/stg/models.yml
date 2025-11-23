@@ -1,13 +1,16 @@
 models:
 - name: stops
   config:
-    alias: gtfs__stops
+    alias: stops
 - name: stop_times
   config:
     alias: gtfs__stop_times
+    enabled: false
 - name: routes
   config:
     alias: gtfs__routes
+    enabled: false
 - name: trips
   config:
     alias: gtfs__trips
+    enabled: false

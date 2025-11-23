@@ -48,7 +48,8 @@ def run_dlt(dlt_resource, destination, schema):
         dataset_name=schema
     )
 
-    result = pipeline.run(dlt_resource)
+    # TODO predavat parametry nekde od usera
+    result = pipeline.run(dlt_resource, write_disposition='replace')
     print(result)
 
 
@@ -79,7 +80,8 @@ def create_models_yml(input_data, template_file, output_file):
 def get_worldpop_url(country, theme):
 
     if theme == 'population':
-        url = 'https://data.worldpop.org/GIS/Mastergrid/Global_2000_2020/{}/L0/{}_level0_100m_2000_2020.tif'.format(country.upper(), country)
+        #url = 'https://data.worldpop.org/GIS/Mastergrid/Global_2000_2020/{}/L0/{}_level0_100m_2000_2020.tif'.format(country.upper(), country)
+        url = 'https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/2025/{}/v1/100m/constrained/{}_pop_2025_CN_100m_R2025A_v1.tif'.format(country.upper(), country)
     else:
         raise ValueError('Theme {} is not suported.'.format(theme))
 

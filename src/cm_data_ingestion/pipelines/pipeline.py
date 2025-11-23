@@ -1,8 +1,9 @@
-import dlt
 from pathlib import Path
 import os
 import tempfile
-import duckdb
+
+import dlt
+
 
 from .common.helpers import run_dbt, run_dlt, get_worldpop_url
 
@@ -24,7 +25,7 @@ def _ingest_gtfs(destination, config, dbt_run, dbt_params):
     run_dlt(dlt_resource, destination, 'gtfs_raw')
 
     if dbt_run:
-        run_dbt(destination, 'gtfs_dbt', str(DBT_DIR), dbt_params)
+        run_dbt(destination, 'gtfs_stg', str(DBT_DIR), dbt_params)
 
 
 def _ingest_ovm(destination, config, dbt_run, dbt_params):
@@ -43,7 +44,7 @@ def _ingest_ovm(destination, config, dbt_run, dbt_params):
                 }
                 for item in config['items']
             ]
-        run_dbt(destination, 'ovm_dbt', str(DBT_DIR), dbt_params)
+        run_dbt(destination, 'ovm_stg', str(DBT_DIR), dbt_params)
 
 
 def _ingest_worldpop(destination, config, dbt_run, dbt_params):
@@ -72,7 +73,7 @@ def _ingest_worldpop(destination, config, dbt_run, dbt_params):
                 }
                 for item in config['items']
             ]
-        run_dbt(destination, 'worldpop_dbt', str(DBT_DIR), dbt_params)
+        run_dbt(destination, 'worldpop_stg', str(DBT_DIR), dbt_params)
 
 
 def _ingest_geoboundaries(destination, config, dbt_run, dbt_params):
@@ -100,7 +101,7 @@ def _ingest_geoboundaries(destination, config, dbt_run, dbt_params):
                 }
                 for item in config['items']
             ]
-        run_dbt(destination, 'geobnd_dbt', str(DBT_DIR), dbt_params)
+        run_dbt(destination, 'geobnd_stg', str(DBT_DIR), dbt_params)
 
 
 def _ingest_osm(destination, config, dbt_run, dbt_params):
@@ -134,7 +135,7 @@ def _ingest_osm(destination, config, dbt_run, dbt_params):
                 }
                 for item in config['items']
             ]
-        run_dbt(destination, 'osm_dbt', str(DBT_DIR), dbt_params)
+        run_dbt(destination, 'osm_stg', str(DBT_DIR), dbt_params)
 
 
 def _ingest_caller(destination, config, dbt_run, dbt_params):
@@ -147,22 +148,31 @@ def _ingest_caller(destination, config, dbt_run, dbt_params):
         _ingest_worldpop(destination, config, dbt_run, dbt_params)
     elif config['provider'] == 'geoboundaries':
         _ingest_geoboundaries(destination, config, dbt_run, dbt_params)
-    # TODO fix high CPU usage
-    # elif config['provider'] == 'openstreetmap':
-    #     _ingest_osm(destination, config, dbt_run, dbt_params)
+    elif config['provider'] == 'openstreetmap':
+        _ingest_osm(destination, config, dbt_run, dbt_params)
     else:
         raise ValueError('Data provider {} not supported.'.format(config['provider']))
 
 
 def ingest_duckdb(duckdb_path: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
 
-    db = duckdb.connect(duckdb_path, config = {'threads': 1})
-
-    destination = dlt.destinations.duckdb(db)
+    destination = dlt.destinations.duckdb(duckdb_path)
     _ingest_caller(destination, config, dbt_run, dbt_params)
 
 
 def ingest_motherduck(md_connect_string: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
 
     destination = dlt.destinations.motherduck(md_connect_string)
+    _ingest_caller(destination, config, dbt_run, dbt_params)
+
+
+def ingest_file(file_path: str, format: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
+
+    destination = dlt.destinations.filesystem(
+        bucket_url=file_path,
+        
+        # TODO nefunguje
+        #file_format=format
+    )
+
     _ingest_caller(destination, config, dbt_run, dbt_params)

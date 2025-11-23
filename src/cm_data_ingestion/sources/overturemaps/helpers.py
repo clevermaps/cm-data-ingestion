@@ -5,9 +5,17 @@ import mercantile
 
 from .settings import OVM_S3_URL_TEMPLATE_DUCKDB, OVM_S3_URL_TEMPLATE_ARROW
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_duckdb_con():
+    """
+    Create and configure a DuckDB connection with HTTPFS and spatial extensions.
 
+    Returns:
+        duckdb.DuckDBPyConnection: Configured DuckDB connection.
+    """
     con = duckdb.connect(
         config={
             'threads': 1,
@@ -27,10 +35,24 @@ def get_duckdb_con():
 
 # slow
 def get_data_bbox_duckdb(theme, type, xmin, ymin, xmax, ymax, release):
+    """
+    Query Overturemaps data from DuckDB parquet files filtered by bounding box.
 
+    Args:
+        theme (str): Theme of the data.
+        type (str): Type of the data.
+        xmin (float): Minimum x coordinate of bounding box.
+        ymin (float): Minimum y coordinate of bounding box.
+        xmax (float): Maximum x coordinate of bounding box.
+        ymax (float): Maximum y coordinate of bounding box.
+        release (str): Release version.
+
+    Yields:
+        list: List of records in batches.
+    """
     url = OVM_S3_URL_TEMPLATE_DUCKDB.format(release=release, theme=theme, type=type)
 
-    print(url)
+    logger.info(f"Querying DuckDB parquet files from URL: {url}")
 
     con = get_duckdb_con()
 
@@ -49,6 +71,7 @@ def get_data_bbox_duckdb(theme, type, xmin, ymin, xmax, ymax, release):
     while True:
         try:
             chunk = record_batch_reader.read_next_batch()
+            logger.debug(f"Yielding batch with {len(chunk.to_pylist())} records")
             yield chunk.to_pylist()
         except StopIteration:
             break
@@ -57,20 +80,44 @@ def get_data_bbox_duckdb(theme, type, xmin, ymin, xmax, ymax, release):
 
 
 def get_data_bbox_divide_arrow(theme, type, bbox, release, divide_zoom):
+    """
+    Divide bounding box into tiles and yield data for each tile using Arrow format.
 
+    Args:
+        theme (str): Theme of the data.
+        type (str): Type of the data.
+        bbox (tuple): Bounding box coordinates (xmin, ymin, xmax, ymax).
+        release (str): Release version.
+        divide_zoom (int): Zoom level for dividing bounding box.
+
+    Yields:
+        Iterator: Data chunks for each tile.
+    """
     bboxes = divide_bbox((bbox), divide_zoom)
-    print(len(bboxes))
+
+    logger.info(f"Dividing bounding box into tiles at zoom level {divide_zoom}, total tiles: {len(bboxes)}")
 
     for bbox in bboxes:
-        print(bbox)
+        logger.debug(f"Processing tile bounding box: {bbox}")
         yield from get_data_bbox_arrow(theme, type, bbox, release)
 
 
 def get_data_bbox_arrow(theme, type, bbox, release):
+    """
+    Query Overturemaps data using Arrow format filtered by bounding box.
 
+    Args:
+        theme (str): Theme of the data.
+        type (str): Type of the data.
+        bbox (tuple): Bounding box coordinates (xmin, ymin, xmax, ymax).
+        release (str): Release version.
+
+    Yields:
+        pyarrow.RecordBatch: Record batches matching the filter.
+    """
     url = OVM_S3_URL_TEMPLATE_ARROW.format(release=release, theme=theme, type=type)
 
-    print(url)
+    logger.info(url)
 
     s3 = pyarrow.fs.S3FileSystem(region='us-west-2')
 
@@ -85,7 +132,7 @@ def get_data_bbox_arrow(theme, type, bbox, release):
         (ds.field("bbox", "ymax") < ymax)
     )
 
-    print(filter_expr)
+    logger.info(filter_expr)
 
     # TODO columns parametric
     scanner = ds.Scanner.from_dataset(
@@ -101,7 +148,16 @@ def get_data_bbox_arrow(theme, type, bbox, release):
 
 
 def divide_bbox(bbox, zoom):
+    """
+    Divide a bounding box into tiles at a given zoom level.
 
+    Args:
+        bbox (tuple): Bounding box coordinates (xmin, ymin, xmax, ymax).
+        zoom (int): Zoom level.
+
+    Returns:
+        list: List of bounding boxes for each tile.
+    """
     tiles = list(mercantile.tiles(*bbox, zoom))
 
     bboxes = []
@@ -112,4 +168,3 @@ def divide_bbox(bbox, zoom):
         bboxes.append(bounds)
 
     return bboxes
-        

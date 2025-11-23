@@ -2,9 +2,12 @@ import os
 import requests
 import duckdb
 import re
+import logging
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from cm_data_ingestion.sources.openstreetmap.settings import GEOFABRIK_INDEX_URL
+
+logger = logging.getLogger(__name__)
 
 
 def get_available_data_versions(country_code, target_date_range=None, target_date_tolerance_days=0):
@@ -18,40 +21,52 @@ def get_available_data_versions(country_code, target_date_range=None, target_dat
         target_date_range=target_date_range,
         target_date_tolerance_days=target_date_tolerance_days
     )
+    logger.debug(f"Available data versions for {country_code}: {[file_date.strftime('%Y-%m-%d') for file_date, _, _ in pbf_files if file_date is not None]}")
     return [file_date.strftime("%Y-%m-%d") for file_date, _, _ in pbf_files if file_date is not None]
 
 
 def get_country_by_iso_code(iso_code):
+    logger.info(f"Fetching country data for ISO code: {iso_code}")
     response = requests.get(GEOFABRIK_INDEX_URL)
-    response.raise_for_status()  # Raise an error for bad HTTP responses
+    try:
+        response.raise_for_status()  # Raise an error for bad HTTP responses
+        data = response.json()
+    except requests.RequestException as e:
+        logger.error(f"Failed to fetch country data from {GEOFABRIK_INDEX_URL}: {e}")
+        raise
 
-    data = response.json()
     for item in data.get("features", []):
         properties = item.get("properties", {})
         country_codes = properties.get("iso3166-1:alpha2", [])
         sanitized_country_codes = [code.lower() for code in country_codes]
         if iso_code.lower() in sanitized_country_codes:
+            logger.debug(f"Found matching country properties for ISO code {iso_code}: {properties}")
             return properties
 
+    logger.warning(f"No matching country found for ISO code: {iso_code}")
     return None  # Return None if no match is found
 
 
 def download_pbf(url, output_path, force=False):
     if force or not os.path.exists(output_path):
         if force and os.path.exists(output_path):
-            print(f"Force downloading PBF file from {url} to {output_path}, overwriting existing file.")
+            logger.info(f"Force downloading PBF file from {url} to {output_path}, overwriting existing file.")
         else:
-            print(f"Downloading PBF file from {url} to {output_path}")
+            logger.info(f"Downloading PBF file from {url} to {output_path}")
 
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an error for bad HTTP responses
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Raise an error for bad HTTP responses
+        except requests.RequestException as e:
+            logger.error(f"Failed to download PBF file from {url}: {e}")
+            raise
 
         with open(output_path, "wb") as file:
             file.write(response.content)
 
-        print(f"Downloaded PBF file to {output_path}")
+        logger.info(f"Downloaded PBF file to {output_path}")
     else:
-        print(f"PBF file already exists at {output_path}, skipping download.")
+        logger.info(f"PBF file already exists at {output_path}, skipping download.")
 
 
 def setup_duckdb_extensions(con):
@@ -109,6 +124,7 @@ def get_available_historical_files(pbf_url, country_id):
     # Get the directory listing
     response = requests.get(directory_url)
     if response.status_code != 200:
+        logger.error(f"Failed to access directory: {directory_url} with status code {response.status_code}")
         raise Exception(f"Failed to access directory: {directory_url} with status code {response.status_code}")
 
     # Parse HTML to find available historical files
@@ -133,6 +149,7 @@ def get_available_historical_files(pbf_url, country_id):
             except ValueError:
                 continue
 
+    logger.debug(f"Available historical files for {country_id}: {available_dates}")
     return available_dates
 
 
@@ -163,6 +180,7 @@ def get_available_historical_files_in_range(pbf_url, country_id, target_date_ran
         if start_date - timedelta(days=target_date_tolerance_days) <= date <= end_date + timedelta(days=target_date_tolerance_days)
     ]
 
+    logger.debug(f"Filtered available historical files for {country_id} in range {target_date_range} with tolerance {target_date_tolerance_days}: {filtered_available_dates}")
     return filtered_available_dates
 
 
@@ -175,10 +193,12 @@ def get_last_available_file(pbf_url, country_id):
     """
     available_files = get_available_historical_files(pbf_url, country_id)
     if not available_files:
+        logger.warning(f"No available files found for {country_id} at {pbf_url}")
         return None
 
     # Sort by date and return the last one
     available_files.sort(key=lambda x: x[0])
+    logger.debug(f"Last available file for {country_id}: {available_files[-1]}")
     return available_files[-1]
 
 
@@ -186,11 +206,15 @@ def find_suitable_pbf_files(country_code, target_date_range=None, target_date_to
     country_data = get_country_by_iso_code(country_code)
 
     if not country_data:
-        raise ValueError(f"No data found for ISO code: {country_code}")
+        error_msg = f"No data found for ISO code: {country_code}"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
 
     pbf_url = country_data.get("urls", {}).get("pbf")
     if not pbf_url:
-        raise ValueError(f"No PBF URL found for ISO code: {country_code}")
+        error_msg = f"No PBF URL found for ISO code: {country_code}"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
 
     if target_date_range:
         available_files = get_available_historical_files_in_range(
@@ -201,16 +225,22 @@ def find_suitable_pbf_files(country_code, target_date_range=None, target_date_to
         )
 
         if len(available_files) == 0:
-            raise ValueError(f"No suitable PBF file found for country code: {country_code} within the specified date range {target_date_range} and tolerance {target_date_tolerance_days} days.")
+            error_msg = f"No suitable PBF file found for country code: {country_code} within the specified date range {target_date_range} and tolerance {target_date_tolerance_days} days."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
+        logger.info(f"Found {len(available_files)} suitable PBF files for {country_code} within date range {target_date_range}")
         return available_files
     else:
         # If no date range is specified, return the latest available file
         last_file = get_last_available_file(pbf_url, country_data['id'])
 
         if not last_file:
-            raise ValueError(f"No suitable PBF file found for country code: {country_code}.")
+            error_msg = f"No suitable PBF file found for country code: {country_code}."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
+        logger.info(f"Using last available PBF file for {country_code}: {last_file}")
         return [last_file]
 
 
@@ -221,7 +251,9 @@ def find_suitable_pbf_file(country_code, target_date_range=None, target_date_tol
         target_date_tolerance_days
     )
     files.sort(key=lambda x: x[0]) # Sort files by date ascending
-    return files[0] if prefer_older else files[-1]  # Return the last file if prefer_older is True, otherwise the first one
+    selected_file = files[0] if prefer_older else files[-1]  # Return the last file if prefer_older is True, otherwise the first one
+    logger.info(f"Selected PBF file for {country_code}: {selected_file}")
+    return selected_file
 
 
 def get_data(temp_dir, country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
@@ -229,6 +261,7 @@ def get_data(temp_dir, country_code, tag, value, element_type=None, target_date_
     Get OSM data for a specific country, filtered by tags and optionally by date.
     """
     current_datetime = datetime.now().isoformat()  # Get the current date-time
+    logger.info(f"Getting OSM data for country: {country_code}, tag: {tag}, value: {value}, element_type: {element_type}, date range: {target_date_range}, tolerance: {target_date_tolerance_days}, prefer_older: {prefer_older}")
 
     # Step 1: Find the suitable PBF file URL
     date, pbf_url, date_suffix = find_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days, prefer_older)
@@ -243,7 +276,7 @@ def get_data(temp_dir, country_code, tag, value, element_type=None, target_date_
     for row, column_names in process_pbf_with_duckdb(pbf_file_path, tag, value, element_type):
         total_items_processed += 1
         if total_items_processed % 1000 == 0:
-            print(f"Processed {total_items_processed} items")
+            logger.info(f"Processed {total_items_processed} items")
 
         # Add "data_version" and "imported_at" fields
         result = dict(zip(column_names, row))
@@ -253,4 +286,4 @@ def get_data(temp_dir, country_code, tag, value, element_type=None, target_date_
 
         yield result
 
-    print(f"Total items fetched: {total_items_processed}")
+    logger.info(f"Total items fetched: {total_items_processed}")

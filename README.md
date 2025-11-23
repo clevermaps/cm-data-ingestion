@@ -17,6 +17,10 @@ Run the following command to install the `cm-data-ingestion` package on your sys
     pip install git+https://github.com/clevermaps/cm-data-ingestion.git
 ```
 
+## Documentation
+
+More detailed documentation can be found in `docs` folder.
+
 ## Examples
 
 Example configurations and usage can be found in `example.py`, demonstrating how to set up ingestion for various sources.
@@ -24,7 +28,7 @@ Example configurations and usage can be found in `example.py`, demonstrating how
 
 ## Technical overview
 
-## Overview
+### Overview
 
 The `cm-data-ingestion` repository is designed to facilitate the ingestion, processing, and management of various geospatial and transit data sources. It is structured into several key components including sources, pipelines, and helpers, enabling modular and extensible data workflows.
 
@@ -45,7 +49,6 @@ The `cm-data-ingestion` repository is designed to facilitate the ingestion, proc
 3. **Loading**: Processed data is loaded into DuckDB databases or other destinations for downstream use.
 
 4. **Transformation**: Optionaly, data is normalized using basic staging transformations defined as dbt models.
-
 
 
 ### Key Technologies

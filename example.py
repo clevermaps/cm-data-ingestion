@@ -1,6 +1,11 @@
+import logging
+
 from cm_data_ingestion.pipelines import pipeline
 
+logging.basicConfig(level=logging.INFO)
+
 duckdb_path = "./data/data.duckdb"
+
 
 ## GTFS
 
@@ -23,6 +28,10 @@ dbt_params = [
         "alias": "stops"
     }
 ]
+
+#pipeline.ingest_file('./data', 'parquet', config)
+
+#pipeline.ingest_file('s3://clevermaps-data-lake/temp/dlt/', 'csv', config)
 
 #pipeline.ingest_duckdb(duckdb_path, config, True, dbt_params)
 
@@ -96,7 +105,7 @@ config = {
     ]
 }
 
-pipeline.ingest_duckdb(duckdb_path, config, True)
+#pipeline.ingest_duckdb(duckdb_path, config, True)
 
 
 ## OpenStreetMap
@@ -111,4 +120,5 @@ config = {
     ]
 }
 
-#pipeline.ingest_duckdb(duckdb_path, config, True)
+#pipeline.ingest_file('./data', 'jsonl', config)
+pipeline.ingest_duckdb(duckdb_path, config, True)

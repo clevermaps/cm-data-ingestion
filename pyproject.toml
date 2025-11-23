@@ -11,6 +11,7 @@ requires-python = ">=3.9"
 readme = "README.md"
 dependencies = [
     "dlt[duckdb]>=1.7.0",
+    "dlt[s3]",
     "duckdb>=1.2.0",
     "pyarrow>=19.0.1",
     "mercantile>=1.2.1",
