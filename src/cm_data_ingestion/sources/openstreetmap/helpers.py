@@ -26,6 +26,7 @@ def get_available_data_versions(country_code, target_date_range=None, target_dat
 
 
 def get_country_by_iso_code(iso_code):
+    
     logger.info(f"Fetching country data for ISO code: {iso_code}")
     response = requests.get(GEOFABRIK_INDEX_URL)
     try:
@@ -70,11 +71,13 @@ def download_pbf(url, output_path, force=False):
 
 
 def setup_duckdb_extensions(con):
+
     con.execute("INSTALL 'spatial';")
     con.execute("LOAD 'spatial';")
 
 
 def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None, element_type=None, batch_size=1000):
+
     con = duckdb.connect()
     setup_duckdb_extensions(con)
 

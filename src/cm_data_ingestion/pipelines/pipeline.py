@@ -1,9 +1,9 @@
 from pathlib import Path
 import os
 import tempfile
+import pycountry
 
 import dlt
-
 
 from .common.helpers import run_dbt, run_dlt, get_worldpop_url
 
@@ -51,14 +51,18 @@ def _ingest_worldpop(destination, config, dbt_run, dbt_params):
 
     DBT_DIR = BASE_DIR / "dbt/worldpop"
 
-    items = [
-        {
-            "url": get_worldpop_url(item['country'], item['theme']),
-            "file_name": os.path.basename(get_worldpop_url(item['country'], item['theme'])),
-            "table_name": item["theme"]
-        }
-        for item in config['items']
-    ]
+    items = []
+
+    for cc in config['options']['country_codes']:
+        cc_3 = pycountry.countries.get(alpha_2=cc.upper()).alpha_3.lower()
+        for item in config['items']:
+            items.append(
+                {
+                    "url": get_worldpop_url(cc_3, item['theme']),
+                    "file_name": os.path.basename(get_worldpop_url(cc_3, item['theme'])),
+                    "table_name": item["theme"]
+                }
+            )
 
     temp_dir = tempfile.gettempdir()
     dlt_resource = worldpop(items, temp_dir)
@@ -80,14 +84,17 @@ def _ingest_geoboundaries(destination, config, dbt_run, dbt_params):
 
     DBT_DIR = BASE_DIR / "dbt/geobnd"
 
-    items = [
-        {
-            "country_code": item["country_code"],
-            "admin_level": item["admin_level"],
-            "table_name": 'geoboundaries__{}'.format(item["admin_level"].lower())
-        }
-        for item in config['items']
-    ]
+    items = []
+
+    for cc in config['options']['country_codes']:
+        cc_3 = pycountry.countries.get(alpha_2=cc.upper()).alpha_3
+        for item in config['items']:
+            items.append(
+                {
+                    "url": "https://www.geoboundaries.org/api/current/gbOpen/{}/{}/".format(cc_3, item["admin_level"]),
+                    "table_name": 'geoboundaries__{}'.format(item["admin_level"].lower())
+                }
+            )
 
     dlt_resource = geoboundaries(items)
     run_dlt(dlt_resource, destination, 'geobnd_raw')
@@ -108,22 +115,21 @@ def _ingest_osm(destination, config, dbt_run, dbt_params):
 
     DBT_DIR = BASE_DIR / "dbt/osm"
 
-    items = [
-        {
-            "tag": item["theme"],
-            "value": None,
-            "country_codes": [item['country_code']],
-            "table_name": item["theme"],
-            "element_type": "node"
-        }
-        for item in config['items']
-    ]
+    items = []
+    for cc in config['options']['country_codes']:
+        for item in config['items']:
+            items.append(
+                {
+                    "country_code": cc,
+                    "tag": item["theme"],
+                    "value": None,
+                    "table_name": item["theme"],
+                    "element_type": "node"
+                }
+            )
 
     temp_dir = tempfile.gettempdir()
-    options = {
-        'temp_dir': temp_dir
-    }
-    dlt_resource = osm(items, options)
+    dlt_resource = osm(items, temp_dir)
     run_dlt(dlt_resource, destination, 'osm_raw')
 
     if dbt_run:

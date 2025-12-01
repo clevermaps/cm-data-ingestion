@@ -1,6 +1,6 @@
 import requests
 import geopandas as gpd
-import os
+import pycountry
 import logging
 
 from .settings import GEOBOUNDARIES_URL
@@ -8,19 +8,19 @@ from .settings import GEOBOUNDARIES_URL
 logger = logging.getLogger(__name__)
 
 
-def get_data(country_iso, admin_level):
+def get_data(api_url):
     """
     Fetches geoBoundaries metadata and downloads the corresponding GeoJSON file.
 
     Args:
-        country_iso (str): ISO country code.
-        admin_level (int): Administrative level.
+        api_url
 
     Yields:
         dict: GeoJSON features as dictionaries with WKT geometry.
     """
-    logger.info(f"Fetching geoBoundaries data for country: {country_iso}, admin level: {admin_level}")
-    api_url = f"https://www.geoboundaries.org/api/current/gbOpen/{country_iso}/{admin_level}/"
+
+    logger.info(f"Fetching geoBoundaries data for: {api_url}")
+
     try:
         response = requests.get(api_url)
         response.raise_for_status()
@@ -32,7 +32,7 @@ def get_data(country_iso, admin_level):
 
     gj_url = metadata.get("gjDownloadURL")
     if not gj_url:
-        error_msg = f"No 'gjDownloadURL' found for {country_iso}-{admin_level}"
+        error_msg = f"No 'gjDownloadURL' found for {api_url}"
         logger.error(error_msg)
         raise ValueError(error_msg)
 

@@ -18,10 +18,11 @@ def geoboundaries(items):
         dlt.resource: Data resource for each item.
     """
     logger.info(f"Starting geoboundaries source with {len(items)} items")
+
     for item in items:
         logger.info(f"Processing item: {item}")
         yield dlt.resource(
-            get_data(item['country_code'], item['admin_level']),
+            get_data(item['url']),
             name=item['table_name'],
             max_table_nesting=0
         )
