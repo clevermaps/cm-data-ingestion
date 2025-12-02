@@ -22,7 +22,9 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
-on-run-start: "load spatial"
+on-run-start:
+  - "INSTALL spatial;"
+  - "LOAD spatial;"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
