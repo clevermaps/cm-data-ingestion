@@ -22,11 +22,11 @@ config = {
     "options": {}
 }
 
-pipeline.ingest_file('./data', 'parquet', config)
+#pipeline.ingest_file('./data', 'parquet', config)
 
-pipeline.ingest_file('s3://your-bucket-path/', 'csv', config)
+#pipeline.ingest_file('s3://your-bucket-path/', 'csv', config)
 
-pipeline.ingest_duckdb(duckdb_path, config, True)
+#pipeline.ingest_duckdb(duckdb_path, config, True)
 
 #md_con_str = ''
 #pipeline.ingest_motherduck(md_con_str, config, True)
@@ -47,12 +47,12 @@ config = {
         {"theme": "base", "type": "land_use", "table_name": "base__land_use"}
     ],
     "options": {
-        "release": "2025-09-24.0",
+        "release": "2025-10-22.0",
         "bbox": [15.54242618063797, 48.61653930468355, 17.646931589819502, 49.63325475249341]
     }
 }
 
-#pipeline.ingest_duckdb(duckdb_path, config, True)
+pipeline.ingest_duckdb(duckdb_path, config, True)
 
 
 ## WorldPop
@@ -129,4 +129,4 @@ config = {
 }
 
 #pipeline.ingest_file('./data', 'jsonl', config)
-pipeline.ingest_duckdb(duckdb_path, config, False)
+#pipeline.ingest_duckdb(duckdb_path, config, False)
