@@ -3,11 +3,17 @@ sources:
 - name: ovm
   schema: ovm_raw
   tables:
-  - name: places_place
-    identifier: places__place
-  - name: addresses_address
+  - name: addresses__address
     identifier: addresses__address
+  - name: base__landuse
+    identifier: base__landuse
+  - name: buildings__building
+    identifier: buildings__building
   - name: divisions__division
-    identifier: divisions_division
-  - name: divisions_division_area
+    identifier: divisions__division
+  - name: divisions__division_area
     identifier: divisions__division_area
+  - name: places__place
+    identifier: places__place
+  - name: transportation__segment
+    identifier: transportation__segment

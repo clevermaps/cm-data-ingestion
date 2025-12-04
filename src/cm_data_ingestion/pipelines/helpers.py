@@ -48,9 +48,10 @@ def run_dlt(dlt_resource, destination, schema):
         dataset_name=schema
     )
 
-    # TODO predavat parametry nekde od usera
+    # TODO predavat write_disposition z configu
     result = pipeline.run(dlt_resource, write_disposition='replace')
-    print(result)
+    
+    return result
 
 
 def create_models_yml(input_data, template_file, output_file):
@@ -76,7 +77,7 @@ def create_models_yml(input_data, template_file, output_file):
         yaml.dump(template_models, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
 
 
-# Dat nekam jinam
+# TODO dat to source
 def get_worldpop_url(country, theme):
 
     if theme == 'population':

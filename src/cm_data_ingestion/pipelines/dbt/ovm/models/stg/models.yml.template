@@ -1,13 +1,22 @@
 models:
-- name: places_place
+- name: addresses__address
   config:
-    alias: ovm__places_place
-- name: divisions_division
+    alias: addresses__address
+- name: base__landuse
   config:
-    alias: ovm__divisions_division
-- name: divisions_division_area
+    alias: base__landuse
+- name: buildings__building
   config:
-    alias: ovm__divisions_division_area
-- name: addresses_address
+    alias: buildings__building
+- name: places__place
   config:
-    alias: ovm__addresses_address
+    alias: places__place
+- name: divisions__division
+  config:
+    alias: divisions__division
+- name: divisions__division_area
+  config:
+    alias: divisions__division_area
+- name: transportation__segment
+  config:
+    alias: transportation__segment

@@ -183,8 +183,10 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-pipelines/data
-
 dbt_packages
 logs
 target
+
+tests/.dlt
+
+data

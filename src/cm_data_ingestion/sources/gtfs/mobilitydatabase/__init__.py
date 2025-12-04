@@ -5,7 +5,7 @@ from .helpers import get_data
 logger = logging.getLogger(__name__)
 
 @dlt.source(name="gtfs_mobility")
-def gtfs_mobility(items):
+def source(items):
     
     logger.info(f"Starting gtfs_mobility source with {len(items)} items")
     for item in items:
@@ -27,6 +27,5 @@ def gtfs_mobility(items):
                 item.get('x-coordinate'),
                 item.get('y-coordinate')
             ),
-            name=table_name,
-            max_table_nesting=0
+            name=table_name
         )

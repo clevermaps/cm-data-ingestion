@@ -2,7 +2,6 @@ geobnd:
   outputs:
     dev:
       type: duckdb
-      path: ../../../data/dlt.duckdb
       extensions:
         - httpfs
         - spatial

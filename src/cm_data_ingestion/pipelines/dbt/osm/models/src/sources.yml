@@ -1,7 +1,32 @@
 version: 2
+
 sources:
-- name: osm
-  schema: osm_raw
-  tables:
-  - name: amenity
-    identifier: amenity
+  - name: osm
+    schema: osm_raw
+    tables:
+      - name: amenity
+        identifier: amenity
+      - name: boundary
+        identifier: boundary
+      - name: building
+        identifier: building
+      - name: emergency
+        identifier: emergency
+      - name: healthcare
+        identifier: healthcare
+      - name: highway
+        identifier: highway
+      - name: historic
+        identifier: historic
+      - name: leisure
+        identifier: leisure
+      - name: office
+        identifier: office
+      - name: place
+        identifier: place
+      - name: public_transport
+        identifier: public_transport
+      - name: shop
+        identifier: shop
+      - name: tourism
+        identifier: tourism

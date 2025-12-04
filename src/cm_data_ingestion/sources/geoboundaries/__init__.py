@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 @dlt.source(name="geoboundaries")
-def geoboundaries(items):
+def source(items):
     """
     DLT source for geoboundaries data ingestion.
 
@@ -23,6 +23,5 @@ def geoboundaries(items):
         logger.info(f"Processing item: {item}")
         yield dlt.resource(
             get_data(item['url']),
-            name=item['table_name'],
-            max_table_nesting=0
+            name=item['table_name']
         )

@@ -5,51 +5,57 @@ import pycountry
 
 import dlt
 
-from .common.helpers import run_dbt, run_dlt, get_worldpop_url
+from .helpers import run_dbt, run_dlt, get_worldpop_url
 
-from ..sources.gtfs.mobilitydatabase import gtfs_mobility
-from ..sources.overturemaps import ovm
-from ..sources.worldpop import worldpop
-from ..sources.geoboundaries import geoboundaries
-from ..sources.openstreetmap import osm
+from ..sources.gtfs.mobilitydatabase import source as gtfs_source
+from ..sources.overturemaps import source as ovm_source
+from ..sources.worldpop import source as worldpop_source
+from ..sources.geoboundaries import source as geobnd_source
+from ..sources.openstreetmap import source as osm_source
 
 
 BASE_DIR = Path(__file__).parent
 
 
-def _ingest_gtfs(destination, config, dbt_run, dbt_params):
+def _ingest_gtfs(destination, config):
 
-    DBT_DIR = BASE_DIR / "dbt/gtfs"
+    dlt_resource = gtfs_source(config['items'])
+    result = run_dlt(dlt_resource, destination, 'gtfs_raw')
 
-    dlt_resource = gtfs_mobility(config['items'])
-    run_dlt(dlt_resource, destination, 'gtfs_raw')
-
-    if dbt_run:
-        run_dbt(destination, 'gtfs_stg', str(DBT_DIR), dbt_params)
+    return result
 
 
-def _ingest_ovm(destination, config, dbt_run, dbt_params):
+def _stage_gtfs(destination, config, dbt_params):
 
-    DBT_DIR = BASE_DIR / "dbt/ovm"
+    dbt_dir = BASE_DIR / "dbt/gtfs"
 
-    dlt_resource = ovm(config['items'], config['options'])
-    run_dlt(dlt_resource, destination, 'ovm_raw')
-
-    if dbt_run:
-        if not dbt_params:
-            dbt_params = [
-                {
-                    "name": '{}_{}'.format(item["theme"], item["type"]),
-                    "alias": '{}_{}'.format(item["theme"], item["type"])
-                }
-                for item in config['items']
-            ]
-        run_dbt(destination, 'ovm_stg', str(DBT_DIR), dbt_params)
+    run_dbt(destination, 'gtfs_stg', str(dbt_dir), dbt_params)
 
 
-def _ingest_worldpop(destination, config, dbt_run, dbt_params):
+def _ingest_ovm(destination, config):
 
-    DBT_DIR = BASE_DIR / "dbt/worldpop"
+    dlt_resource = ovm_source(config['items'], config['options'])
+    result = run_dlt(dlt_resource, destination, 'ovm_raw')
+
+    return result
+
+
+def _stage_ovm(destination, config, dbt_params):
+
+    dbt_dir = BASE_DIR / "dbt/worldpop"
+
+    if not dbt_params:
+        dbt_params = [
+            {
+                "name": '{}__{}'.format(item["theme"], item["type"]),
+                "alias": '{}__{}'.format(item["theme"], item["type"])
+            }
+            for item in config['items']
+        ]
+    run_dbt(destination, 'ovm_stg', str(dbt_dir), dbt_params)
+
+
+def _ingest_worldpop(destination, config):
 
     items = []
 
@@ -65,24 +71,44 @@ def _ingest_worldpop(destination, config, dbt_run, dbt_params):
             )
 
     temp_dir = tempfile.gettempdir()
-    dlt_resource = worldpop(items, temp_dir)
-    run_dlt(dlt_resource, destination, 'worldpop_raw')
+    dlt_resource = worldpop_source(items, temp_dir)
+    result = run_dlt(dlt_resource, destination, 'worldpop_raw')
 
-    if dbt_run:
-        if not dbt_params:
-            dbt_params = [
-                {
-                    "name": '{}'.format(item["theme"]),
-                    "alias": '{}'.format(item["theme"])
-                }
-                for item in config['items']
-            ]
-        run_dbt(destination, 'worldpop_stg', str(DBT_DIR), dbt_params)
+    return result
 
 
-def _ingest_geoboundaries(destination, config, dbt_run, dbt_params):
+def _stage_worldpop(destination, config, dbt_params):
+
+    dbt_dir = BASE_DIR / "dbt/worldpop"
+
+    if not dbt_params:
+        dbt_params = [
+            {
+                "name": '{}'.format(item["theme"]),
+                "alias": '{}'.format(item["theme"])
+            }
+            for item in config['items']
+        ]
+    run_dbt(destination, 'worldpop_stg', str(dbt_dir), dbt_params)
+
+
+def _stage_geoboundaries(destination, config, dbt_params):
 
     DBT_DIR = BASE_DIR / "dbt/geobnd"
+
+    if not dbt_params:
+        dbt_params = [
+            {
+                "name": 'geoboundaries__{}'.format(item["admin_level"].lower()),
+                "alias": 'geoboundaries__{}'.format(item["admin_level"].lower())
+            }
+            for item in config['items']
+        ]
+
+    run_dbt(destination, 'geobnd_stg', str(DBT_DIR), dbt_params)
+
+
+def _ingest_geoboundaries(destination, config):
 
     items = []
 
@@ -96,24 +122,13 @@ def _ingest_geoboundaries(destination, config, dbt_run, dbt_params):
                 }
             )
 
-    dlt_resource = geoboundaries(items)
-    run_dlt(dlt_resource, destination, 'geobnd_raw')
+    dlt_resource = geobnd_source(items)
+    result = run_dlt(dlt_resource, destination, 'geobnd_raw')
 
-    if dbt_run:
-        if not dbt_params:
-            dbt_params = [
-                {
-                    "name": 'geoboundaries__{}'.format(item["admin_level"].lower()),
-                    "alias": 'geoboundaries__{}'.format(item["admin_level"].lower())
-                }
-                for item in config['items']
-            ]
-        run_dbt(destination, 'geobnd_stg', str(DBT_DIR), dbt_params)
+    return result
 
 
-def _ingest_osm(destination, config, dbt_run, dbt_params):
-
-    DBT_DIR = BASE_DIR / "dbt/osm"
+def _ingest_osm(destination, config):
 
     items = []
     for cc in config['options']['country_codes']:
@@ -129,33 +144,57 @@ def _ingest_osm(destination, config, dbt_run, dbt_params):
             )
 
     temp_dir = tempfile.gettempdir()
-    dlt_resource = osm(items, temp_dir)
-    run_dlt(dlt_resource, destination, 'osm_raw')
+    dlt_resource = osm_source(items, temp_dir)
+    result = run_dlt(dlt_resource, destination, 'osm_raw')
 
-    if dbt_run:
-        if not dbt_params:
-            dbt_params = [
-                {
-                    "name": item["theme"],
-                    "alias": item["theme"]
-                }
-                for item in config['items']
-            ]
-        run_dbt(destination, 'osm_stg', str(DBT_DIR), dbt_params)
+    return result
 
 
-def _ingest_caller(destination, config, dbt_run, dbt_params):
+def _stage_osm(destination, config, dbt_params):
+
+    dbt_dir = BASE_DIR / "dbt/osm"
+
+    if not dbt_params:
+        dbt_params = [
+            {
+                "name": item["theme"],
+                "alias": item["theme"]
+            }
+            for item in config['items']
+        ]
+    run_dbt(destination, 'osm_stg', str(dbt_dir), dbt_params)
+
+
+def _ingest_caller(destination, config):
 
     if config['provider'] == 'gtfs':
-        _ingest_gtfs(destination, config, dbt_run, dbt_params)
+        result = _ingest_gtfs(destination, config)
     elif config['provider'] == 'overturemaps':
-        _ingest_ovm(destination, config, dbt_run, dbt_params)
+        result = _ingest_ovm(destination, config)
     elif config['provider'] == 'worldpop':
-        _ingest_worldpop(destination, config, dbt_run, dbt_params)
+        _ingest_worldpop(destination, config)
     elif config['provider'] == 'geoboundaries':
-        _ingest_geoboundaries(destination, config, dbt_run, dbt_params)
+        result = _ingest_geoboundaries(destination, config)
     elif config['provider'] == 'openstreetmap':
-        _ingest_osm(destination, config, dbt_run, dbt_params)
+        result = _ingest_osm(destination, config)
+    else:
+        raise ValueError('Data provider {} not supported.'.format(config['provider']))
+    
+    return result
+
+
+def _stage_caller(destination, config, dbt_params):
+
+    if config['provider'] == 'gtfs':
+        _stage_gtfs(destination, config, dbt_params)
+    elif config['provider'] == 'overturemaps':
+        _stage_ovm(destination, config, dbt_params)
+    elif config['provider'] == 'worldpop':
+        _stage_worldpop(destination, config, dbt_params)
+    elif config['provider'] == 'geoboundaries':
+        _stage_geoboundaries(destination, config, dbt_params)
+    elif config['provider'] == 'openstreetmap':
+        _stage_osm(destination, config, dbt_params)
     else:
         raise ValueError('Data provider {} not supported.'.format(config['provider']))
 
@@ -165,20 +204,20 @@ def ingest_duckdb(duckdb_path: str, config: dict, dbt_run: bool=False, dbt_param
     destination = dlt.destinations.duckdb(duckdb_path)
     _ingest_caller(destination, config, dbt_run, dbt_params)
 
+    if dbt_run: _stage_caller(destination, config, dbt_params)
 
-def ingest_motherduck(md_connect_string: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
 
-    destination = dlt.destinations.motherduck(md_connect_string)
+def ingest_motherduck(md_token: str, md_database: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
+
+    destination = dlt.destinations.motherduck(f'md:{md_database}?motherduck_token={md_token}')
     _ingest_caller(destination, config, dbt_run, dbt_params)
 
+    if dbt_run: _stage_caller(destination, config, dbt_params)
 
-def ingest_file(file_path: str, format: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
 
-    destination = dlt.destinations.filesystem(
-        bucket_url=file_path,
-        
-        # TODO nefunguje
-        #file_format=format
-    )
+def ingest_file(file_path: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
 
+    destination = dlt.destinations.filesystem(bucket_url=file_path)
     _ingest_caller(destination, config, dbt_run, dbt_params)
+
+    if dbt_run: _stage_caller(destination, config, dbt_params)

@@ -7,7 +7,7 @@ from .helpers import get_data_bbox_arrow
 
 
 @dlt.source(name="overturemaps")
-def ovm(items, options):
+def source(items, options):
     """
     DLT source for Overturemaps data ingestion.
 
@@ -22,11 +22,10 @@ def ovm(items, options):
         print(item)
         ovm_theme = item["theme"]
         ovm_type = item["type"]
-        table_name = item['table_name']
+        table_name = '{}__{}'.format(ovm_theme, ovm_type)
 
         # TODO max_table_nesting=0 to pipeline config
         yield dlt.resource(
             get_data_bbox_arrow(ovm_theme, ovm_type, options['bbox'], options['release']),
-            name=f'{table_name}',
-            max_table_nesting=0
+            name=f'{table_name}'
         )

@@ -1,9 +1,3 @@
-with tmp as
-(
-    select
-        *
-    from {{ source('ovm', 'divisions_division_area') }}
-)
 
 select
     id,
@@ -12,5 +6,5 @@ select
     country,
     subtype,
     class
-from tmp
+from {{ source('ovm', 'divisions__division') }}
 where try(st_geomfromwkb(geometry)) is not null

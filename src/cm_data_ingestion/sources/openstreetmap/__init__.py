@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 @dlt.source(name="openstreetmap")
-def osm(items, temp_dir):
+def source(items, temp_dir):
     """
     DLT source for OpenStreetMap data ingestion.
 

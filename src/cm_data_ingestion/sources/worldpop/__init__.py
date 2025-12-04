@@ -3,7 +3,7 @@ import dlt
 from .helpers import raster_to_points
 
 @dlt.source(name="worldpop")
-def worldpop(configs, temp_dir):
+def source(configs, temp_dir):
     
     for cfg in configs:
         print(cfg)
@@ -11,6 +11,5 @@ def worldpop(configs, temp_dir):
     
         yield dlt.resource(
             raster_to_points(cfg["url"], cfg['file_name'], temp_dir),
-            name=f'{table_name}',
-            max_table_nesting=0
+            name=f'{table_name}'
         )

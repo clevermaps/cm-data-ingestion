@@ -2,7 +2,6 @@ worldpop:
   outputs:
     dev:
       type: duckdb
-      path: ../../data/data.duckdb
       extensions:
         - httpfs
         - spatial
