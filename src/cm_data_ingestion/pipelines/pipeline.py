@@ -17,22 +17,22 @@ from ..sources.openstreetmap import source as osm_source
 BASE_DIR = Path(__file__).parent
 
 
-def _ingest_gtfs(destination, config):
+def ingest_gtfs(destination, config):
 
     dlt_resource = gtfs_source(config['items'])
     result = run_dlt(dlt_resource, destination, 'gtfs_raw')
 
     return result
 
-
-def _stage_gtfs(destination, config, dbt_params):
+# TODO build dbt_params
+def stage_gtfs(destination, config, dbt_params):
 
     dbt_dir = BASE_DIR / "dbt/gtfs"
 
     run_dbt(destination, 'gtfs_stg', str(dbt_dir), dbt_params)
 
 
-def _ingest_ovm(destination, config):
+def ingest_ovm(destination, config):
 
     dlt_resource = ovm_source(config['items'], config['options'])
     result = run_dlt(dlt_resource, destination, 'ovm_raw')
@@ -40,7 +40,7 @@ def _ingest_ovm(destination, config):
     return result
 
 
-def _stage_ovm(destination, config, dbt_params):
+def stage_ovm(destination, config, dbt_params):
 
     dbt_dir = BASE_DIR / "dbt/worldpop"
 
@@ -55,7 +55,7 @@ def _stage_ovm(destination, config, dbt_params):
     run_dbt(destination, 'ovm_stg', str(dbt_dir), dbt_params)
 
 
-def _ingest_worldpop(destination, config):
+def ingest_worldpop(destination, config):
 
     items = []
 
@@ -77,7 +77,7 @@ def _ingest_worldpop(destination, config):
     return result
 
 
-def _stage_worldpop(destination, config, dbt_params):
+def stage_worldpop(destination, config, dbt_params):
 
     dbt_dir = BASE_DIR / "dbt/worldpop"
 
@@ -92,7 +92,7 @@ def _stage_worldpop(destination, config, dbt_params):
     run_dbt(destination, 'worldpop_stg', str(dbt_dir), dbt_params)
 
 
-def _stage_geoboundaries(destination, config, dbt_params):
+def stage_geoboundaries(destination, config, dbt_params):
 
     DBT_DIR = BASE_DIR / "dbt/geobnd"
 
@@ -108,7 +108,7 @@ def _stage_geoboundaries(destination, config, dbt_params):
     run_dbt(destination, 'geobnd_stg', str(DBT_DIR), dbt_params)
 
 
-def _ingest_geoboundaries(destination, config):
+def ingest_geoboundaries(destination, config):
 
     items = []
 
@@ -128,7 +128,7 @@ def _ingest_geoboundaries(destination, config):
     return result
 
 
-def _ingest_osm(destination, config):
+def ingest_osm(destination, config):
 
     items = []
     for cc in config['options']['country_codes']:
@@ -150,7 +150,7 @@ def _ingest_osm(destination, config):
     return result
 
 
-def _stage_osm(destination, config, dbt_params):
+def stage_osm(destination, config, dbt_params):
 
     dbt_dir = BASE_DIR / "dbt/osm"
 
@@ -165,36 +165,36 @@ def _stage_osm(destination, config, dbt_params):
     run_dbt(destination, 'osm_stg', str(dbt_dir), dbt_params)
 
 
-def _ingest_caller(destination, config):
+def ingest_caller(destination, config):
 
     if config['provider'] == 'gtfs':
-        result = _ingest_gtfs(destination, config)
+        result = ingest_gtfs(destination, config)
     elif config['provider'] == 'overturemaps':
-        result = _ingest_ovm(destination, config)
+        result = ingest_ovm(destination, config)
     elif config['provider'] == 'worldpop':
-        _ingest_worldpop(destination, config)
+        ingest_worldpop(destination, config)
     elif config['provider'] == 'geoboundaries':
-        result = _ingest_geoboundaries(destination, config)
+        result = ingest_geoboundaries(destination, config)
     elif config['provider'] == 'openstreetmap':
-        result = _ingest_osm(destination, config)
+        result = ingest_osm(destination, config)
     else:
         raise ValueError('Data provider {} not supported.'.format(config['provider']))
     
     return result
 
 
-def _stage_caller(destination, config, dbt_params):
+def stage_caller(destination, config, dbt_params):
 
     if config['provider'] == 'gtfs':
-        _stage_gtfs(destination, config, dbt_params)
+        stage_gtfs(destination, config, dbt_params)
     elif config['provider'] == 'overturemaps':
-        _stage_ovm(destination, config, dbt_params)
+        stage_ovm(destination, config, dbt_params)
     elif config['provider'] == 'worldpop':
-        _stage_worldpop(destination, config, dbt_params)
+        stage_worldpop(destination, config, dbt_params)
     elif config['provider'] == 'geoboundaries':
-        _stage_geoboundaries(destination, config, dbt_params)
+        stage_geoboundaries(destination, config, dbt_params)
     elif config['provider'] == 'openstreetmap':
-        _stage_osm(destination, config, dbt_params)
+        stage_osm(destination, config, dbt_params)
     else:
         raise ValueError('Data provider {} not supported.'.format(config['provider']))
 
@@ -202,22 +202,22 @@ def _stage_caller(destination, config, dbt_params):
 def ingest_duckdb(duckdb_path: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
 
     destination = dlt.destinations.duckdb(duckdb_path)
-    _ingest_caller(destination, config, dbt_run, dbt_params)
+    ingest_caller(destination, config, dbt_run, dbt_params)
 
-    if dbt_run: _stage_caller(destination, config, dbt_params)
+    if dbt_run: stage_caller(destination, config, dbt_params)
 
 
 def ingest_motherduck(md_token: str, md_database: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
 
     destination = dlt.destinations.motherduck(f'md:{md_database}?motherduck_token={md_token}')
-    _ingest_caller(destination, config, dbt_run, dbt_params)
+    ingest_caller(destination, config, dbt_run, dbt_params)
 
-    if dbt_run: _stage_caller(destination, config, dbt_params)
+    if dbt_run: stage_caller(destination, config, dbt_params)
 
 
 def ingest_file(file_path: str, config: dict, dbt_run: bool=False, dbt_params: dict = None):
 
     destination = dlt.destinations.filesystem(bucket_url=file_path)
-    _ingest_caller(destination, config, dbt_run, dbt_params)
+    ingest_caller(destination, config, dbt_run, dbt_params)
 
-    if dbt_run: _stage_caller(destination, config, dbt_params)
+    if dbt_run: stage_caller(destination, config, dbt_params)

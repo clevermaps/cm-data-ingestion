@@ -1,9 +1,9 @@
 from utils import ALL_DESTINATIONS, assert_load_info, load_table_counts
 import pytest
 import dlt
-from cm_data_ingestion.pipelines.pipeline import _ingest_ovm
+from cm_data_ingestion.pipelines.pipeline import ingest_ovm
 
-ALL_DESTINATIONS = ['duckdb']
+ALL_DESTINATIONS = ['duckdb', 'filesystem', 'motherduck']
 
 @pytest.mark.parametrize("destination_name", ALL_DESTINATIONS)
 def test_all_resources(destination_name: str) -> None:
@@ -26,7 +26,7 @@ def test_all_resources(destination_name: str) -> None:
         }
     }
 
-    load_info = _ingest_ovm(destination_name, config)
+    load_info = ingest_ovm(destination_name, config)
     print(load_info)
 
     # check run result

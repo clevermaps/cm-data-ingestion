@@ -1,9 +1,9 @@
 from utils import ALL_DESTINATIONS, assert_load_info, load_table_counts
 import pytest
 import dlt
-from cm_data_ingestion.pipelines.pipeline import _ingest_geoboundaries
+from cm_data_ingestion.pipelines.pipeline import ingest_geoboundaries, stage_geoboundaries
 
-ALL_DESTINATIONS = ['duckdb']
+ALL_DESTINATIONS = ['duckdb', 'filesystem', 'motherduck']
 
 @pytest.mark.parametrize("destination_name", ALL_DESTINATIONS)
 def test_all_resources(destination_name: str) -> None:
@@ -22,11 +22,16 @@ def test_all_resources(destination_name: str) -> None:
         }
     }
 
-    load_info = _ingest_geoboundaries(destination_name, config)
+    load_info = ingest_geoboundaries(destination_name, config)
     print(load_info)
 
     # check run result
     assert_load_info(load_info)
+
+    # TODO
+    # stage_info = stage_geoboundaries(destination_name, config, None)
+    # print(stage_info)
+    # assert_load_info(load_info)
 
     # table_names = [t["name"] for t in pipeline.default_schema.data_tables()]
     # table_counts = load_table_counts(pipeline, *table_names)

@@ -9,7 +9,7 @@ def source(items):
     
     logger.info(f"Starting gtfs_mobility source with {len(items)} items")
     for item in items:
-        logger.info(f"Processing item: {item}")
+        logger.info("Processing item: %s", item)
 
         country_code = item.get('country_code')
         gtfs_type = item.get('gtfs_type')

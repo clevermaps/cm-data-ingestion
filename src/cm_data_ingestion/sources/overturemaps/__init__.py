@@ -1,6 +1,10 @@
 import dlt
+import logging
 
 from .helpers import get_data_bbox_arrow
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Overturemaps schema
 # https://til.simonwillison.net/overture-maps/overture-maps-parquet
@@ -19,7 +23,7 @@ def source(items, options):
         dlt.resource: Data resource for each item.
     """
     for item in items:
-        print(item)
+        logger.info("Processing item: %s", item)
         ovm_theme = item["theme"]
         ovm_type = item["type"]
         table_name = '{}__{}'.format(ovm_theme, ovm_type)

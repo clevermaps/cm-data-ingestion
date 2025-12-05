@@ -1,6 +1,11 @@
 import dlt
 import uuid
 import yaml
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def run_dbt(destination, dataset_name, dbt_dir, dbt_model_config):
@@ -31,16 +36,23 @@ def run_dbt(destination, dataset_name, dbt_dir, dbt_model_config):
     # If running fails, the error will be raised with a full stack trace
     models = dbt.run_all()
 
-    for m in models:
-        print(
-            f"Model {m.model_name} materialized" +
-            f" in {m.time}" +
-            f" with status {m.status}" +
-            f" and message {m.message}"
-        )
+    return models
+
+    # for m in models:
+    #     print(
+    #         f"Model {m.model_name} materialized" +
+    #         f" in {m.time}" +
+    #         f" with status {m.status}" +
+    #         f" and message {m.message}"
+    #     )
 
 
 def run_dlt(dlt_resource, destination, schema):
+
+    logger.info("Starting run_dlt with destination: %s, schema: %s", destination, schema)
+
+    pipeline_name = str(uuid.uuid4())
+    logger.info("Creating pipeline with name: %s", pipeline_name)
 
     pipeline = dlt.pipeline(
         pipeline_name=str(uuid.uuid4()),
@@ -48,8 +60,11 @@ def run_dlt(dlt_resource, destination, schema):
         dataset_name=schema
     )
 
-    # TODO predavat write_disposition z configu
+    logger.info("Pipeline created successfully")
+
+    logger.info("Running pipeline with resource: %s", dlt_resource.name)
     result = pipeline.run(dlt_resource, write_disposition='replace')
+    logger.info("Pipeline run completed with result: %s", result)
     
     return result
 
