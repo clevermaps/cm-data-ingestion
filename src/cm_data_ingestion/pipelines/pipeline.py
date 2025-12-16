@@ -104,7 +104,7 @@ def ingest_caller(destination, config):
     elif config['provider'] == 'overturemaps':
         result = ingest_ovm(destination, config)
     elif config['provider'] == 'worldpop':
-        ingest_worldpop(destination, config)
+        result = ingest_worldpop(destination, config)
     elif config['provider'] == 'geoboundaries':
         result = ingest_geoboundaries(destination, config)
     elif config['provider'] == 'openstreetmap':

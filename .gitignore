@@ -188,6 +188,7 @@ logs
 target
 
 secrets.toml
-secrets.toml
 
 data
+
+*.duckdb
