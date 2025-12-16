@@ -10,7 +10,7 @@ select
     arrival_time,
     departure_time,
     stop_id,
-    stop_sequence,
+    cast(stop_sequence as integer) as stop_sequence,
     --stop_headsign,
     pickup_type,
     drop_off_type
