@@ -187,6 +187,7 @@ dbt_packages
 logs
 target
 
-tests/.dlt
+secrets.toml
+secrets.toml
 
 data

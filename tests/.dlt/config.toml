@@ -1,0 +1,17 @@
+[normalize.data_writer]
+disable_compression=true
+
+[normalize]
+workers=2
+
+[load]
+workers=2
+
+[pipelines]
+loader_file_format="csv"
+
+[source]
+max_table_nesting=1
+
+[pipeline]
+write_disposition="replace"

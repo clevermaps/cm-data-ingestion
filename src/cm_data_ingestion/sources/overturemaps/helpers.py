@@ -132,7 +132,7 @@ def get_data_bbox_arrow(theme, type, bbox, release):
         (ds.field("bbox", "ymax") < ymax)
     )
 
-    logger.info(filter_expr)
+    logger.debug(filter_expr)
 
     # TODO columns parametric
     scanner = ds.Scanner.from_dataset(

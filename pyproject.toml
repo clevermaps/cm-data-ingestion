@@ -27,8 +27,3 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["cm_data_ingestion*"]
-
-[tool.setuptools.package-data]
-"cm_data_ingestion.pipelines" = [
-    "dbt/**"
-]
