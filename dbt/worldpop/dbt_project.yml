@@ -22,9 +22,6 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
-on-run-start:
-  - "INSTALL spatial;"
-  - "LOAD spatial;"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
@@ -34,3 +31,4 @@ on-run-start:
 # files using the `{{ config(...) }}` macro.
 models:
   +materialized: table
+  +schema: worldpop  # specify a custom schema for all models in this project

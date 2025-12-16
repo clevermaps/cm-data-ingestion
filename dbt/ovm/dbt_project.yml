@@ -31,3 +31,4 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   +materialized: table
+  +schema: ovm  # specify a custom schema for all models in this project
