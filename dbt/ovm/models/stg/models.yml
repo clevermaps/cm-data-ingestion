@@ -5,7 +5,6 @@ models:
 - name: base__landuse
   config:
     alias: base__landuse
-    enabled: false
 - name: buildings__building
   config:
     alias: buildings__building

@@ -6,7 +6,6 @@ name: 'osm'
 version: '1.0.0'
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'osm'
 
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
@@ -21,10 +20,6 @@ snapshot-paths: ["snapshots"]
 clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
-
-on-run-start:
-  - "INSTALL spatial;"
-  - "LOAD spatial;"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models

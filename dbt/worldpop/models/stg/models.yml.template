@@ -1,4 +1,0 @@
-models:
-- name: population
-  config:
-    alias: population
