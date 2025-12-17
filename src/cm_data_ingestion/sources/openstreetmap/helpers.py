@@ -5,6 +5,7 @@ import re
 import logging
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
+import pyarrow as pa
 from cm_data_ingestion.sources.openstreetmap.settings import GEOFABRIK_INDEX_URL
 
 logger = logging.getLogger(__name__)
@@ -101,13 +102,19 @@ def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None, element_type=No
     result = con.execute(query)
     column_names = [desc[0] for desc in result.description]  # Get column names
 
-    # Instead of fetching all rows at once, fetch in batches and yield
-    while True:
-        rows = result.fetchmany(batch_size)
-        if not rows:
-            break
-        for row in rows:
-            yield row, column_names
+    # # Instead of fetching all rows at once, fetch in batches and yield
+    # while True:
+    #     rows = result.fetchmany(batch_size)
+    #     if not rows:
+    #         break
+    #     for row in rows:
+    #         yield row, column_names
+
+    arrow_reader = result.fetch_record_batch(batch_size)
+
+    for record_batch in arrow_reader:
+        if record_batch.num_rows > 0:
+            yield record_batch
 
     con.close()
 
@@ -259,34 +266,63 @@ def find_suitable_pbf_file(country_code, target_date_range=None, target_date_tol
     return selected_file
 
 
-def get_data(temp_dir, country_code, tag, value, element_type=None, target_date_range=None, target_date_tolerance_days=0, prefer_older=False):
-    """
-    Get OSM data for a specific country, filtered by tags and optionally by date.
-    """
-    current_datetime = datetime.now().isoformat()  # Get the current date-time
-    logger.info(f"Getting OSM data for country: {country_code}, tag: {tag}, value: {value}, element_type: {element_type}, date range: {target_date_range}, tolerance: {target_date_tolerance_days}, prefer_older: {prefer_older}")
+def get_data(
+    temp_dir,
+    country_code,
+    tag,
+    value,
+    element_type=None,
+    target_date_range=None,
+    target_date_tolerance_days=0,
+    prefer_older=False,
+):
+    current_datetime = datetime.now().isoformat()
 
-    # Step 1: Find the suitable PBF file URL
-    date, pbf_url, date_suffix = find_suitable_pbf_file(country_code, target_date_range, target_date_tolerance_days, prefer_older)
+    date, pbf_url, date_suffix = find_suitable_pbf_file(
+        country_code,
+        target_date_range,
+        target_date_tolerance_days,
+        prefer_older,
+    )
 
-    # Step 2: Download the PBF file
     pbf_file_name = f"{country_code}_{date_suffix}_data.pbf"
     pbf_file_path = os.path.join(temp_dir, pbf_file_name)
     download_pbf(pbf_url, pbf_file_path)
 
-    # Step 3: Process the PBF file with DuckDB in batches
     total_items_processed = 0
-    for row, column_names in process_pbf_with_duckdb(pbf_file_path, tag, value, element_type):
-        total_items_processed += 1
-        if total_items_processed % 1000 == 0:
-            logger.info(f"Processed {total_items_processed} items")
 
-        # Add "data_version" and "imported_at" fields
-        result = dict(zip(column_names, row))
-        result["country_code"] = country_code
-        result["data_version"] = date_suffix
-        result["imported_at"] = current_datetime
+    yield from process_pbf_with_duckdb(
+        pbf_file_path,
+        tag,
+        value,
+        element_type,
+    )
 
-        yield result
+    # for record_batch in process_pbf_with_duckdb(
+    #     pbf_file_path,
+    #     tag,
+    #     value,
+    #     element_type,
+    # ):
+    #     assert isinstance(record_batch, pa.RecordBatch)
 
-    logger.info(f"Total items fetched: {total_items_processed}")
+    #     columns = record_batch.schema.names
+    #     arrays = record_batch.to_pydict()  # column -> list
+
+    #     num_rows = record_batch.num_rows
+
+    #     for i in range(num_rows):
+    #         result = {col: arrays[col][i] for col in columns}
+
+    #         result["country_code"] = country_code
+    #         result["data_version"] = date_suffix
+    #         result["imported_at"] = current_datetime
+
+    #         total_items_processed += 1
+    #         if total_items_processed % 1000 == 0:
+    #             logger.info(f"Processed {total_items_processed} items")
+
+    #         yield result
+
+    # logger.info(f"Total items fetched: {total_items_processed}")
+

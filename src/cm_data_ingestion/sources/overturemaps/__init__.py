@@ -3,7 +3,10 @@ import logging
 
 from .helpers import get_data_bbox_arrow
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
+
 logger = logging.getLogger(__name__)
 
 # Overturemaps schema

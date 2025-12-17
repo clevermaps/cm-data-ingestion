@@ -5,6 +5,8 @@ import pycountry
 
 import dlt
 
+import logging
+
 from .helpers import run_dbt, run_dlt, get_worldpop_url
 
 from ..sources.gtfs.mobilitydatabase import source as gtfs_source
@@ -16,6 +18,10 @@ from ..sources.openstreetmap import source as osm_source
 
 BASE_DIR = Path(__file__).parent
 
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    force=True,
+)
 
 def ingest_gtfs(destination, config):
 

@@ -1,14 +1,14 @@
 [normalize.data_writer]
 disable_compression=true
 
+[extract]
+workers=1
+
 [normalize]
-workers=2
+workers=1
 
 [load]
-workers=2
-
-[pipelines]
-loader_file_format="csv"
+workers=1
 
 [source]
 max_table_nesting=1

@@ -36,5 +36,6 @@ def source(items, temp_dir):
                 item.get("target_date_tolerance_days", 0),
                 item.get("prefer_older", False)
             ),
-            name=table_name
+            name=table_name,
+            #max_table_nesting=0
         )
