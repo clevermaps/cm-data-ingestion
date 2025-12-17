@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # https://til.simonwillison.net/overture-maps/overture-maps-parquet
 
 
-@dlt.source(name="overturemaps")
+@dlt.source(name="overturemaps", max_table_nesting=0)
 def source(items, options):
     """
     DLT source for Overturemaps data ingestion.
@@ -33,6 +33,5 @@ def source(items, options):
 
         yield dlt.resource(
             get_data_bbox_arrow(ovm_theme, ovm_type, options['bbox'], options['release']),
-            name=f'{table_name}',
-            max_table_nesting=0
+            name=f'{table_name}'
         )

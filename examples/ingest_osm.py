@@ -1,7 +1,7 @@
-from cm_data_ingestion.pipelines.pipeline import ingest_duckdb, ingest_file
+from cm_data_ingestion.pipelines.pipeline import ingest_osm
+import dlt
 
 # config = {
-#     "provider": "openstreetmap",
 #     "items": [
 #         {"theme": "amenity"},
 #         {"theme": "aerialway"},
@@ -36,7 +36,6 @@ from cm_data_ingestion.pipelines.pipeline import ingest_duckdb, ingest_file
 # }
 
 config = {
-    "provider": "openstreetmap",
     "items": [
         {"theme": "boundary", "type": "administrative"}
     ],
@@ -45,6 +44,9 @@ config = {
     }
 }
 
-ingest_duckdb('../data/data.duckdb', config)
+destination=dlt.destinations.duckdb("../data/data.duckdb")
+#ingest_osm(destination, config)
 
-#ingest_file('../data/', config)
+#ingest_osm('filesystem', config)
+
+ingest_osm('postgres', config)

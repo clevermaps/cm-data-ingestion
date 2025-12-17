@@ -1,8 +1,7 @@
-from cm_data_ingestion.pipelines.pipeline import ingest_duckdb
-
+from cm_data_ingestion.pipelines.pipeline import ingest_ovm
+import dlt
 
 # config = {
-#         "provider": "overturemaps",
 #         "items": [
 #             {"theme": "places", "type": "place"},
 #             {"theme": "buildings", "type": "building"},
@@ -19,7 +18,6 @@ from cm_data_ingestion.pipelines.pipeline import ingest_duckdb
 #     }
 
 config = {
-    "provider": "overturemaps",
     "items": [
         {"theme": "divisions", "type": "division_area"}
     ],
@@ -29,5 +27,7 @@ config = {
     }
 }
 
-ingest_duckdb('../data/data.duckdb', config)
+destination=dlt.destinations.duckdb("../data/data.duckdb")
+#ingest_ovm(destination, config)
 
+ingest_ovm('postgres', config)

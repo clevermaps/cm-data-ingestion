@@ -1,7 +1,7 @@
-from cm_data_ingestion.pipelines.pipeline import ingest_duckdb
+from cm_data_ingestion.pipelines.pipeline import ingest_geoboundaries
+import dlt
 
 config = {
-    "provider": "geoboundaries",
     "items": [
         {"admin_level": "ADM0"},
         {"admin_level": "ADM1"},
@@ -14,4 +14,9 @@ config = {
     }
 }
 
-ingest_duckdb('./data.duckdb', config)
+destination=dlt.destinations.duckdb("../data/data.duckdb")
+#ingest_geoboundaries(destination, config)
+
+#ingest_geoboundaries('filesystem', config)
+
+ingest_geoboundaries('postgres', config)

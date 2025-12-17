@@ -1,7 +1,7 @@
-from cm_data_ingestion.pipelines.pipeline import ingest_duckdb
+from cm_data_ingestion.pipelines.pipeline import ingest_gtfs
+import dlt
 
 config = {
-    "provider": "gtfs",
     "items": [
         {
             "country_code": "cz",
@@ -13,4 +13,9 @@ config = {
     "options": {}
 }
 
-ingest_duckdb('./data.duckdb', config)
+destination=dlt.destinations.duckdb("../data/data.duckdb")
+ingest_gtfs(destination, config)
+
+ingest_gtfs('filesystem', config)
+
+ingest_gtfs('postgres', config)

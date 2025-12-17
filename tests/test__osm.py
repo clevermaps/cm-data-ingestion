@@ -9,7 +9,6 @@ ALL_DESTINATIONS = ['duckdb', 'filesystem', 'motherduck']
 def test_all_resources(destination_name: str) -> None:
     
     config = {
-        "provider": "openstreetmap",
         "items": [
             {"theme": "amenity"},
             {"theme": "aerialway"},

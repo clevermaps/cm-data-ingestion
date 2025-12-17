@@ -114,7 +114,7 @@ def process_pbf_with_duckdb(pbf_file_path, tag=None, value=None, element_type=No
 
     for record_batch in arrow_reader:
         if record_batch.num_rows > 0:
-            yield record_batch
+            yield record_batch.to_pylist()
 
     con.close()
 

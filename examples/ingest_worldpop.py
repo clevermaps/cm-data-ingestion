@@ -1,4 +1,5 @@
-from cm_data_ingestion.pipelines.pipeline import ingest_duckdb
+from cm_data_ingestion.pipelines.pipeline import ingest_worldpop
+import dlt
 
 config = {
     "provider": "worldpop",
@@ -12,4 +13,9 @@ config = {
     }
 }
 
-ingest_duckdb('./data.duckdb', config)
+destination=dlt.destinations.duckdb("../data/data.duckdb")
+ingest_worldpop(destination, config)
+
+ingest_worldpop('postgres', config)
+
+ingest_worldpop('filesystem', config)

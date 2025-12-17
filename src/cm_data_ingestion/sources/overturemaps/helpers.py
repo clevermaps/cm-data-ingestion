@@ -144,7 +144,7 @@ def get_data_bbox_arrow(theme, type, bbox, release):
     for record_batch in scanner.to_batches():
         if record_batch.num_rows > 0:
 
-            yield record_batch
+            yield record_batch.to_pylist()
 
 
 def divide_bbox(bbox, zoom):
