@@ -31,8 +31,8 @@ def source(items, options):
         ovm_type = item["type"]
         table_name = '{}__{}'.format(ovm_theme, ovm_type)
 
-        # TODO max_table_nesting=0 to pipeline config
         yield dlt.resource(
             get_data_bbox_arrow(ovm_theme, ovm_type, options['bbox'], options['release']),
-            name=f'{table_name}'
+            name=f'{table_name}',
+            max_table_nesting=0
         )

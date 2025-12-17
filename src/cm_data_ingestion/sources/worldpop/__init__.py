@@ -13,6 +13,6 @@ def source(items, temp_dir):
         table_name = item['table_name']
     
         yield dlt.resource(
-            raster_to_points(item["url"], item['file_name'], temp_dir),
+            raster_to_points(item["country"], item['theme'], temp_dir),
             name=f'{table_name}'
         )

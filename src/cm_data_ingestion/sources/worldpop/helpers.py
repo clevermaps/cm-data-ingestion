@@ -121,7 +121,7 @@ def convert_to_points(tif_path, db_name):
         return None
 
 
-def raster_to_points(url, file_name, temp_dir):
+def raster_to_points(country, theme, temp_dir):
     """
     Download and process raster data from a URL, yielding points with coordinates and values.
 
@@ -133,6 +133,10 @@ def raster_to_points(url, file_name, temp_dir):
     Yields:
         dict: Dictionary with keys 'name', 'lon', 'lat', 'value' for each data point.
     """
+
+    url = get_worldpop_url(country, theme)
+    file_name = os.path.basename(url)
+
     base_name = os.path.basename(url)
     archive_path = os.path.join(temp_dir, base_name)
 
@@ -171,3 +175,13 @@ def raster_to_points(url, file_name, temp_dir):
                 "lat": row.lat,
                 "value": row.value
             }
+
+def get_worldpop_url(country, theme):
+
+    # TODO : add more themes
+    if theme == 'population':
+        url = 'https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/2025/{}/v1/100m/constrained/{}_pop_2025_CN_100m_R2025A_v1.tif'.format(country.upper(), country)
+    else:
+        raise ValueError('Theme {} is not suported.'.format(theme))
+
+    return url

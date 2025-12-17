@@ -2,12 +2,11 @@ from pathlib import Path
 import os
 import tempfile
 import pycountry
+import uuid
 
 import dlt
 
 import logging
-
-from .helpers import run_dbt, run_dlt, get_worldpop_url
 
 from ..sources.gtfs.mobilitydatabase import source as gtfs_source
 from ..sources.overturemaps import source as ovm_source
@@ -19,9 +18,33 @@ from ..sources.openstreetmap import source as osm_source
 BASE_DIR = Path(__file__).parent
 
 logging.basicConfig(
+    level=logging.INFO,
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     force=True,
 )
+
+logger = logging.getLogger(__name__)
+
+def run_dlt(dlt_resource, destination, schema):
+
+    logger.info("Starting run_dlt with destination: %s, schema: %s", destination, schema)
+
+    pipeline_name = str(uuid.uuid4())
+    logger.info("Creating pipeline with name: %s", pipeline_name)
+
+    pipeline = dlt.pipeline(
+        pipeline_name=str(uuid.uuid4()),
+        destination=destination, 
+        dataset_name=schema
+    )
+
+    logger.info("Pipeline created successfully")
+
+    logger.info("Running pipeline with resource: %s", dlt_resource.name)
+    result = pipeline.run(dlt_resource, write_disposition='replace')
+    logger.info("Pipeline run completed with result: %s", result)
+    
+    return result
 
 def ingest_gtfs(destination, config):
 
@@ -48,9 +71,9 @@ def ingest_worldpop(destination, config):
         cc_3 = pycountry.countries.get(alpha_2=cc.upper()).alpha_3.lower()
         for item in config['items']:
             items.append(
-                {
-                    "url": get_worldpop_url(cc_3, item['theme']),
-                    "file_name": os.path.basename(get_worldpop_url(cc_3, item['theme'])),
+                 {
+                    "country": cc_3,
+                    "theme": item['theme'],
                     "table_name": item["theme"]
                 }
             )
