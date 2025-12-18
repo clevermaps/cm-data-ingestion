@@ -30,4 +30,6 @@ config = {
 destination=dlt.destinations.duckdb("../data/data.duckdb")
 #ingest_ovm(destination, config)
 
-ingest_ovm('postgres', config)
+#ingest_ovm('postgres', config)
+
+ingest_ovm('filesystem', config)

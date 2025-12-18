@@ -17,6 +17,6 @@ config = {
 destination=dlt.destinations.duckdb("../data/data.duckdb")
 #ingest_geoboundaries(destination, config)
 
-#ingest_geoboundaries('filesystem', config)
+ingest_geoboundaries('filesystem', config)
 
-ingest_geoboundaries('postgres', config)
+#ingest_geoboundaries('postgres', config)

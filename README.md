@@ -38,7 +38,34 @@ packages:
 
 ```
 
-After that you call the models using standard `dbt ref()` function, e.g. `ref('gtfs', 'stops')`.
+After that you call the models using standard `dbt ref()` function in your dbt project models, e.g. `select * from ref('gtfs', 'stops')`.
+
+## Quick start
+
+Setup credentials in `./dlt/secrets.toml` and then just call:
+
+```
+from cm_data_ingestion.pipelines.pipeline import ingest_ovm
+import dlt
+
+config = {
+    "items": [
+        {"theme": "divisions", "type": "division_area"}
+    ],
+    "options": {
+        "release": "2025-10-22.0",
+        "bbox": [12.084961,48.458352,19.028320,51.179343]
+    }
+}
+
+ingest_ovm('duckdb', config)
+
+ingest_ovm('postgres', config)
+
+ingest_ovm('filesystem', config)
+
+
+```
 
 ## Documentation
 

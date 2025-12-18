@@ -1,4 +1,4 @@
-# Technical Description of the cm-data-ingestion Repository
+# Technical Description of the cm-data-ingestion repository
 
 ## Overview
 
@@ -8,11 +8,10 @@ The `cm-data-ingestion` repository is designed to facilitate the ingestion, proc
 
 ### Python dlt sources
 
-- **Sources**: Located in `src/cm_data_ingestion/sources.py`, this directory contains modules responsible for fetching and processing data from different providers such as Geoboundaries, GTFS (General Transit Feed Specification), OpenStreetMap, OvertureMaps, and WorldPop. Each source module encapsulates the logic specific to its data format and API.
+- **Sources**: Located in `src/cm_data_ingestion/sources.py`, this directory contains modules responsible for fetching and processing data from different providers such as Geoboundaries, GTFS (General Transit Feed Specification), OpenStreetMap, OvertureMaps, and WorldPop. Each source module encapsulates the logic specific to its data format and API. Sources are implemented as standard dlthub sources.
 
 - **Pipelines**: Found in `src/cm_data_ingestion/pipelines.py`, prepared pipelines that orchestrate the data ingestion workflows. They manage the sequence of operations, including data extraction and loading to the some common destinations such as DuckDb, filesystem or cloud storage. You can easily write your own pipelines in the standard dlt way using any supported destination.
 
-- **Helpers**: Found in `src/cm_data_ingestion/helpers.py` Utility functions and shared logic are organized under helpers within both sources and pipelines. These include common data processing routines, API interaction helpers, and configuration management.
 
 ### Dbt stating models
 
@@ -42,7 +41,7 @@ The modular design allows easy addition of new data sources or pipelines by adhe
 
 ## Examples
 
-Example configurations and usage can be found in `example.py`, demonstrating how to set up ingestion for various sources.
+Example configurations and usage can be found in `examples` folder, demonstrating how to set up ingestion for various sources.
 
 ---
 

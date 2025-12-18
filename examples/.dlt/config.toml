@@ -1,9 +1,6 @@
 [normalize.data_writer]
 disable_compression=true
 
-[destination.filesystem]
-bucket_url = "../data/" # replace with your bucket name,
-
 [extract]
 workers=1
 

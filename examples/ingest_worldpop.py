@@ -16,6 +16,6 @@ config = {
 destination=dlt.destinations.duckdb("../data/data.duckdb")
 ingest_worldpop(destination, config)
 
-ingest_worldpop('postgres', config)
+#ingest_worldpop('postgres', config)
 
 ingest_worldpop('filesystem', config)

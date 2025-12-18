@@ -14,8 +14,8 @@ config = {
 }
 
 destination=dlt.destinations.duckdb("../data/data.duckdb")
-ingest_gtfs(destination, config)
+#ingest_gtfs(destination, config)
 
 ingest_gtfs('filesystem', config)
 
-ingest_gtfs('postgres', config)
+#ingest_gtfs('postgres', config)

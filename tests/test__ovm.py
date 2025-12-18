@@ -3,7 +3,7 @@ import pytest
 import dlt
 from cm_data_ingestion.pipelines.pipeline import ingest_ovm
 
-ALL_DESTINATIONS = ['duckdb', 'filesystem', 'motherduck']
+ALL_DESTINATIONS = ['duckdb', 'filesystem', 'motherduck', 'postgres']
 
 @pytest.mark.parametrize("destination_name", ALL_DESTINATIONS)
 def test_all_resources(destination_name: str) -> None:
