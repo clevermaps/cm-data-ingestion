@@ -14,9 +14,12 @@ config = {
     }
 }
 
-destination=dlt.destinations.duckdb("../data/data.duckdb")
-#ingest_geoboundaries(destination, config)
+# set credentials and connection details in .dlt/config.toml and .dlt/secrets.toml
+
+ingest_geoboundaries('duckdb', config)
 
 ingest_geoboundaries('filesystem', config)
 
-#ingest_geoboundaries('postgres', config)
+ingest_geoboundaries('postgres', config)
+
+ingest_worldpop('motherduck', config)

@@ -14,26 +14,6 @@ Firstly you need to setup some credentials and connection details for your desti
 
 Here are some common settings you can setup:
 
-```toml
-# .dlt/config.toml
-
-[normalize.data_writer]
-disable_compression=true
-
-[extract]
-workers=1
-
-[normalize]
-workers=1
-
-[load]
-workers=1
-
-[source]
-max_table_nesting=1
-
-[pipeline]
-write_disposition="replace"
 
 ```toml
 #.dlt/secrets.toml
@@ -89,7 +69,7 @@ This configuration allows you to explicitly define which data should be extracte
 
 ### ingest_geoboundaries
 
-Function for ingesting geoboundaries data. Used to load and process geographic boundary data.
+Function for ingesting Geoboundaries data. Used to load and process geographic boundary data.
 
 #### Example Usage
 

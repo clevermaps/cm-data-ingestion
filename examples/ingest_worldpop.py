@@ -13,9 +13,12 @@ config = {
     }
 }
 
-destination=dlt.destinations.duckdb("../data/data.duckdb")
-ingest_worldpop(destination, config)
+# set credentials and connection details in .dlt/config.toml and .dlt/secrets.toml
 
-#ingest_worldpop('postgres', config)
+ingest_worldpop('duckdb', config)
+
+ingest_worldpop('postgres', config)
 
 ingest_worldpop('filesystem', config)
+
+ingest_worldpop('motherduck', config)

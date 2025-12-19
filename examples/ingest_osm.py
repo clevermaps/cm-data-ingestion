@@ -44,9 +44,12 @@ config = {
     }
 }
 
-destination=dlt.destinations.duckdb("../data/data.duckdb")
-#ingest_osm(destination, config)
+# set credentials and connection details in .dlt/config.toml and .dlt/secrets.toml
+
+ingest_osm('duckdb', config)
 
 ingest_osm('filesystem', config)
 
-#ingest_osm('postgres', config)
+ingest_osm('postgres', config)
+
+ingest_worldpop('motherduck', config)

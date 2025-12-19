@@ -13,9 +13,13 @@ config = {
     "options": {}
 }
 
-destination=dlt.destinations.duckdb("../data/data.duckdb")
-#ingest_gtfs(destination, config)
+
+# set credentials and connection details in .dlt/config.toml and .dlt/secrets.toml
+
+ingest_gtfs('duckdb', config)
 
 ingest_gtfs('filesystem', config)
 
-#ingest_gtfs('postgres', config)
+ingest_gtfs('postgres', config)
+
+ingest_worldpop('motherduck', config)
