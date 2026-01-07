@@ -1,7 +1,7 @@
 version: 2
 sources:
 - name: gtfs
-  schema: gtfs_raw
+  schema: dlt_gtfs
   tables:
   - name: stops
     identifier: stops

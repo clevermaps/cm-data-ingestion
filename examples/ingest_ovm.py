@@ -35,4 +35,4 @@ ingest_ovm('postgres', config)
 
 ingest_ovm('filesystem', config)
 
-ingest_worldpop('motherduck', config)
+ingest_ovm('motherduck', config)

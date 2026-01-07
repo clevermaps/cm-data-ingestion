@@ -22,4 +22,4 @@ ingest_gtfs('filesystem', config)
 
 ingest_gtfs('postgres', config)
 
-ingest_worldpop('motherduck', config)
+ingest_gtfs('motherduck', config)

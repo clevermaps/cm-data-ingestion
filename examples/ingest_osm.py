@@ -52,4 +52,4 @@ ingest_osm('filesystem', config)
 
 ingest_osm('postgres', config)
 
-ingest_worldpop('motherduck', config)
+ingest_osm('motherduck', config)

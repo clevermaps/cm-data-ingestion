@@ -1,7 +1,7 @@
 version: 2
 sources:
   - name: geobnd
-    schema: geobnd_raw
+    schema: dlt_geobnd
     tables:
       - name: geoboundaries__adm0
         identifier: geoboundaries__adm0

@@ -49,7 +49,7 @@ def run_dlt(dlt_resource, destination, schema):
 def ingest_gtfs(destination, config):
 
     dlt_resource = gtfs_source(config['items'])
-    result = run_dlt(dlt_resource, destination, 'gtfs_raw')
+    result = run_dlt(dlt_resource, destination, 'dlt_gtfs')
 
     return result
 
@@ -57,7 +57,7 @@ def ingest_gtfs(destination, config):
 def ingest_ovm(destination, config):
 
     dlt_resource = ovm_source(config['items'], config['options'])
-    result = run_dlt(dlt_resource, destination, 'ovm_raw')
+    result = run_dlt(dlt_resource, destination, 'dlt_ovm')
 
     return result
 
@@ -80,7 +80,7 @@ def ingest_worldpop(destination, config):
 
     temp_dir = tempfile.gettempdir()
     dlt_resource = worldpop_source(items, temp_dir)
-    result = run_dlt(dlt_resource, destination, 'worldpop_raw')
+    result = run_dlt(dlt_resource, destination, 'dlt_worldpop')
 
     return result
 
@@ -100,7 +100,7 @@ def ingest_geoboundaries(destination, config):
             )
 
     dlt_resource = geobnd_source(items)
-    result = run_dlt(dlt_resource, destination, 'geobnd_raw')
+    result = run_dlt(dlt_resource, destination, 'dlt_geobnd')
 
     return result
 
@@ -121,7 +121,7 @@ def ingest_osm(destination, config):
 
     temp_dir = tempfile.gettempdir()
     dlt_resource = osm_source(items, temp_dir)
-    result = run_dlt(dlt_resource, destination, 'osm_raw')
+    result = run_dlt(dlt_resource, destination, 'dlt_osm')
 
     return result
 

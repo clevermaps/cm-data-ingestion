@@ -1,7 +1,7 @@
 version: 2
 sources:
 - name: ovm
-  schema: ovm_raw
+  schema: dlt_ovm
   tables:
   - name: addresses__address
     identifier: addresses__address

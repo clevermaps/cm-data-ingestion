@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: osm
-    schema: osm_raw
+    schema: dlt_osm
     tables:
       - name: amenity
         identifier: amenity

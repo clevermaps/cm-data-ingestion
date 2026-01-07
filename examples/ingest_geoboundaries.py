@@ -22,4 +22,4 @@ ingest_geoboundaries('filesystem', config)
 
 ingest_geoboundaries('postgres', config)
 
-ingest_worldpop('motherduck', config)
+ingest_geoboundaries('motherduck', config)
